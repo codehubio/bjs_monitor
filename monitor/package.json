@@ -1,0 +1,37 @@
+{
+  "name": "monitor-automate",
+  "version": "1.0.0",
+  "description": "Automation project using Playwright and TypeScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "source ./load-env.sh && playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:daily-eapi": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-eapi.spec.ts",
+    "test:submit-order": "source ./load-env.sh && playwright test src/graylog/scenarios/submit-order.spec.ts",
+    "test:paypal-error": "source ./load-env.sh && playwright test src/graylog/scenarios/paypal.spec.ts",
+    "test:failed-order": "source ./load-env.sh && playwright test src/graylog/scenarios/failed-order.spec.ts",
+    "test:failed-payment": "source ./load-env.sh && playwright test src/graylog/scenarios/failed-payment.spec.ts",
+    "codegen": "playwright codegen",
+    "install:browsers": "playwright install chromium",
+    "upload:s3": "ts-node src/utils/uploadToS3.ts"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.490.0",
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
+

@@ -1,0 +1,1086 @@
+[{
+    "date": "2025-04-28",
+    "success": 3094,
+    "failed": 7
+  },
+  {
+    "date": "2025-04-29",
+    "success": 3242,
+    "failed": 7
+  },
+  {
+    "date": "2025-04-30",
+    "success": 3223,
+    "failed": 3
+  },
+  {
+    "date": "2025-05-01",
+    "success": 2953,
+    "failed": 0
+  },
+  {
+    "date": "2025-05-02",
+    "success": 3703,
+    "failed": 0
+  },
+  {
+    "date": "2025-05-03",
+    "success": 3142,
+    "failed": 0
+  },
+  {
+    "date": "2025-05-04",
+    "success": 2674,
+    "failed": 2
+  },
+  {
+    "date": "2025-05-05",
+    "success": 2449,
+    "failed": 1
+  },
+  {
+    "date": "2025-05-06",
+    "success": 3157,
+    "failed": 2
+  },
+  {
+    "date": "2025-05-07",
+    "success": 2758,
+    "failed": 3
+  },
+  {
+    "date": "2025-05-08",
+    "success": 2967,
+    "failed": 5
+  },
+  {
+    "date": "2025-05-09",
+    "success": 3477,
+    "failed": 1
+  },
+  {
+    "date": "2025-05-10",
+    "success": 3240,
+    "failed": 9
+  },
+  {
+    "date": "2025-05-11",
+    "success": 4940,
+    "failed": 21
+  },
+  {
+    "date": "2025-05-12",
+    "success": 2664,
+    "failed": 2
+  },
+  {
+    "date": "2025-05-13",
+    "success": 2983,
+    "failed": 6
+  },
+  {
+    "date": "2025-05-14",
+    "success": 2834,
+    "failed": 6
+  },
+  {
+    "date": "2025-05-15",
+    "success": 3009,
+    "failed": 5
+  },
+  {
+    "date": "2025-05-16",
+    "success": 3497,
+    "failed": 8
+  },
+  {
+    "date": "2025-05-17",
+    "success": 2850,
+    "failed": 5
+  },
+  {
+    "date": "2025-05-18",
+    "success": 2690,
+    "failed": 2
+  },
+  {
+    "date": "2025-05-19",
+    "success": 2846,
+    "failed": 1
+  },
+  {
+    "date": "2025-05-20",
+    "success": 3016,
+    "failed": 9
+  },
+  {
+    "date": "2025-05-21",
+    "success": 3033,
+    "failed": 5
+  },
+  {
+    "date": "2025-05-22",
+    "success": 2988,
+    "failed": 3
+  },
+  {
+    "date": "2025-05-23",
+    "success": 3532,
+    "failed": 2
+  },
+  {
+    "date": "2025-05-24",
+    "success": 2643,
+    "failed": 1
+  },
+  {
+    "date": "2025-05-25",
+    "success": 2787,
+    "failed": 3
+  },
+  {
+    "date": "2025-05-26",
+    "success": 3157,
+    "failed": 1
+  },
+  {
+    "date": "2025-05-27",
+    "success": 2832,
+    "failed": 6
+  },
+  {
+    "date": "2025-05-28",
+    "success": 2835,
+    "failed": 8
+  },
+  {
+    "date": "2025-05-29",
+    "success": 2875,
+    "failed": 5
+  },
+  {
+    "date": "2025-05-30",
+    "success": 3544,
+    "failed": 3
+  },
+  {
+    "date": "2025-05-31",
+    "success": 2823,
+    "failed": 5
+  },
+  {
+    "date": "2025-06-01",
+    "success": 2569,
+    "failed": 2
+  },
+  {
+    "date": "2025-06-02",
+    "success": 2706,
+    "failed": 3
+  },
+  {
+    "date": "2025-06-03",
+    "success": 3098,
+    "failed": 6
+  },
+  {
+    "date": "2025-06-04",
+    "success": 2785,
+    "failed": 3
+  },
+  {
+    "date": "2025-06-05",
+    "success": 3037,
+    "failed": 8
+  },
+  {
+    "date": "2025-06-06",
+    "success": 3468,
+    "failed": 3
+  },
+  {
+    "date": "2025-06-07",
+    "success": 2733,
+    "failed": 1
+  },
+  {
+    "date": "2025-06-08",
+    "success": 2510,
+    "failed": 2
+  },
+  {
+    "date": "2025-06-09",
+    "success": 2834,
+    "failed": 2
+  },
+  {
+    "date": "2025-06-10",
+    "success": 3007,
+    "failed": 3
+  },
+  {
+    "date": "2025-06-11",
+    "success": 2950,
+    "failed": 14
+  },
+  {
+    "date": "2025-06-12",
+    "success": 2916,
+    "failed": 3
+  },
+  {
+    "date": "2025-06-13",
+    "success": 3424,
+    "failed": 1
+  },
+  {
+    "date": "2025-06-14",
+    "success": 2904,
+    "failed": 4
+  },
+  {
+    "date": "2025-06-15",
+    "success": 3902,
+    "failed": 11
+  },
+  {
+    "date": "2025-06-16",
+    "success": 2999,
+    "failed": 1
+  },
+  {
+    "date": "2025-06-17",
+    "success": 3075,
+    "failed": 1
+  },
+  {
+    "date": "2025-06-18",
+    "success": 2962,
+    "failed": 4
+  },
+  {
+    "date": "2025-06-19",
+    "success": 2976,
+    "failed": 5
+  },
+  {
+    "date": "2025-06-20",
+    "success": 3375,
+    "failed": 2
+  },
+  {
+    "date": "2025-06-21",
+    "success": 2734,
+    "failed": 2
+  },
+  {
+    "date": "2025-06-22",
+    "success": 2508,
+    "failed": 1
+  },
+  {
+    "date": "2025-06-23",
+    "success": 2809,
+    "failed": 8
+  },
+  {
+    "date": "2025-06-24",
+    "success": 3039,
+    "failed": 5
+  },
+  {
+    "date": "2025-06-25",
+    "success": 2966,
+    "failed": 3
+  },
+  {
+    "date": "2025-06-26",
+    "success": 2943,
+    "failed": 2
+  },
+  {
+    "date": "2025-06-27",
+    "success": 3474,
+    "failed": 5
+  },
+  {
+    "date": "2025-06-28",
+    "success": 2810,
+    "failed": 7
+  },
+  {
+    "date": "2025-06-29",
+    "success": 2665,
+    "failed": 3
+  },
+  {
+    "date": "2025-06-30",
+    "success": 2943,
+    "failed": 7
+  },
+  {
+    "date": "2025-07-01",
+    "success": 3275,
+    "failed": 9
+  },
+  {
+    "date": "2025-07-02",
+    "success": 2864,
+    "failed": 5
+  },
+  {
+    "date": "2025-07-03",
+    "success": 3211,
+    "failed": 7
+  },
+  {
+    "date": "2025-07-04",
+    "success": 2632,
+    "failed": 6
+  },
+  {
+    "date": "2025-07-05",
+    "success": 2332,
+    "failed": 2
+  },
+  {
+    "date": "2025-07-06",
+    "success": 2400,
+    "failed": 7
+  },
+  {
+    "date": "2025-07-07",
+    "success": 2767,
+    "failed": 9
+  },
+  {
+    "date": "2025-07-08",
+    "success": 3054,
+    "failed": 1
+  },
+  {
+    "date": "2025-07-09",
+    "success": 2707,
+    "failed": 1
+  },
+  {
+    "date": "2025-07-10",
+    "success": 2898,
+    "failed": 11
+  },
+  {
+    "date": "2025-07-11",
+    "success": 3374,
+    "failed": 9
+  },
+  {
+    "date": "2025-07-12",
+    "success": 2577,
+    "failed": 4
+  },
+  {
+    "date": "2025-07-13",
+    "success": 2573,
+    "failed": 4
+  },
+  {
+    "date": "2025-07-14",
+    "success": 3038,
+    "failed": 23
+  },
+  {
+    "date": "2025-07-15",
+    "success": 3347,
+    "failed": 15
+  },
+  {
+    "date": "2025-07-16",
+    "success": 3100,
+    "failed": 3
+  },
+  {
+    "date": "2025-07-17",
+    "success": 3032,
+    "failed": 10
+  },
+  {
+    "date": "2025-07-18",
+    "success": 3582,
+    "failed": 8
+  },
+  {
+    "date": "2025-07-19",
+    "success": 2924,
+    "failed": 16
+  },
+  {
+    "date": "2025-07-20",
+    "success": 2651,
+    "failed": 2
+  },
+  {
+    "date": "2025-07-21",
+    "success": 2908,
+    "failed": 8
+  },
+  {
+    "date": "2025-07-22",
+    "success": 3848,
+    "failed": 22
+  },
+  {
+    "date": "2025-07-23",
+    "success": 2956,
+    "failed": 8
+  },
+  {
+    "date": "2025-07-24",
+    "success": 464,
+    "failed": 3
+  },
+  {
+    "date": "2025-07-25",
+    "success": 3593,
+    "failed": 27
+  },
+  {
+    "date": "2025-07-26",
+    "success": 2791,
+    "failed": 19
+  },
+  {
+    "date": "2025-07-27",
+    "success": 2576,
+    "failed": 2
+  },
+  {
+    "date": "2025-07-28",
+    "success": 2786,
+    "failed": 32
+  },
+  {
+    "date": "2025-07-29",
+    "success": 3314,
+    "failed": 2
+  },
+  {
+    "date": "2025-07-30",
+    "success": 2952,
+    "failed": 8
+  },
+  {
+    "date": "2025-07-31",
+    "success": 3080,
+    "failed": 18
+  },
+  {
+    "date": "2025-08-01",
+    "success": 3617,
+    "failed": 11
+  },
+  {
+    "date": "2025-08-02",
+    "success": 2744,
+    "failed": 8
+  },
+  {
+    "date": "2025-08-03",
+    "success": 2501,
+    "failed": 7
+  },
+  {
+    "date": "2025-08-04",
+    "success": 2788,
+    "failed": 3
+  },
+  {
+    "date": "2025-08-05",
+    "success": 3162,
+    "failed": 11
+  },
+  {
+    "date": "2025-08-06",
+    "success": 2764,
+    "failed": 8
+  },
+  {
+    "date": "2025-08-07",
+    "success": 3205,
+    "failed": 8
+  },
+  {
+    "date": "2025-08-08",
+    "success": 3563,
+    "failed": 29
+  },
+  {
+    "date": "2025-08-09",
+    "success": 2742,
+    "failed": 4
+  },
+  {
+    "date": "2025-08-10",
+    "success": 2666,
+    "failed": 7
+  },
+  {
+    "date": "2025-08-11",
+    "success": 2873,
+    "failed": 17
+  },
+  {
+    "date": "2025-08-12",
+    "success": 3343,
+    "failed": 4
+  },
+  {
+    "date": "2025-08-13",
+    "success": 2851,
+    "failed": 9
+  },
+  {
+    "date": "2025-08-14",
+    "success": 2928,
+    "failed": 10
+  },
+  {
+    "date": "2025-08-15",
+    "success": 3655,
+    "failed": 9
+  },
+  {
+    "date": "2025-08-16",
+    "success": 2851,
+    "failed": 5
+  },
+  {
+    "date": "2025-08-17",
+    "success": 2549,
+    "failed": 8
+  },
+  {
+    "date": "2025-08-18",
+    "success": 2695,
+    "failed": 12
+  },
+  {
+    "date": "2025-08-19",
+    "success": 3185,
+    "failed": 7
+  },
+  {
+    "date": "2025-08-20",
+    "success": 2840,
+    "failed": 4
+  },
+  {
+    "date": "2025-08-21",
+    "success": 2862,
+    "failed": 6
+  },
+  {
+    "date": "2025-08-22",
+    "success": 3518,
+    "failed": 17
+  },
+  {
+    "date": "2025-08-23",
+    "success": 2816,
+    "failed": 14
+  },
+  {
+    "date": "2025-08-24",
+    "success": 2616,
+    "failed": 10
+  },
+  {
+    "date": "2025-08-25",
+    "success": 3200,
+    "failed": 13
+  },
+  {
+    "date": "2025-08-26",
+    "success": 3327,
+    "failed": 4
+  },
+  {
+    "date": "2025-08-27",
+    "success": 3268,
+    "failed": 8
+  },
+  {
+    "date": "2025-08-28",
+    "success": 2900,
+    "failed": 7
+  },
+  {
+    "date": "2025-08-29",
+    "success": 3427,
+    "failed": 17
+  },
+  {
+    "date": "2025-08-30",
+    "success": 2735,
+    "failed": 5
+  },
+  {
+    "date": "2025-08-31",
+    "success": 2879,
+    "failed": 4
+  },
+  {
+    "date": "2025-09-01",
+    "success": 3058,
+    "failed": 7
+  },
+  {
+    "date": "2025-09-02",
+    "success": 2706,
+    "failed": 7
+  },
+  {
+    "date": "2025-09-03",
+    "success": 2493,
+    "failed": 16
+  },
+  {
+    "date": "2025-09-04",
+    "success": 2655,
+    "failed": 6
+  },
+  {
+    "date": "2025-09-05",
+    "success": 3346,
+    "failed": 60
+  },
+  {
+    "date": "2025-09-06",
+    "success": 2691,
+    "failed": 2
+  },
+  {
+    "date": "2025-09-07",
+    "success": 2390,
+    "failed": 6
+  },
+  {
+    "date": "2025-09-08",
+    "success": 2740,
+    "failed": 5
+  },
+  {
+    "date": "2025-09-09",
+    "success": 3125,
+    "failed": 5
+  },
+  {
+    "date": "2025-09-10",
+    "success": 2804,
+    "failed": 10
+  },
+  {
+    "date": "2025-09-11",
+    "success": 2757,
+    "failed": 16
+  },
+  {
+    "date": "2025-09-12",
+    "success": 3592,
+    "failed": 4
+  },
+  {
+    "date": "2025-09-13",
+    "success": 2936,
+    "failed": 8
+  },
+  {
+    "date": "2025-09-14",
+    "success": 2535,
+    "failed": 1
+  },
+  {
+    "date": "2025-09-15",
+    "success": 2644,
+    "failed": 4
+  },
+  {
+    "date": "2025-09-16",
+    "success": 3205,
+    "failed": 3
+  },
+  {
+    "date": "2025-09-17",
+    "success": 2918,
+    "failed": 6
+  },
+  {
+    "date": "2025-09-18",
+    "success": 3084,
+    "failed": 5
+  },
+  {
+    "date": "2025-09-19",
+    "success": 3879,
+    "failed": 7
+  },
+  {
+    "date": "2025-09-20",
+    "success": 3136,
+    "failed": 4
+  },
+  {
+    "date": "2025-09-21",
+    "success": 2712,
+    "failed": 6
+  },
+  {
+    "date": "2025-09-22",
+    "success": 2872,
+    "failed": 7
+  },
+  {
+    "date": "2025-09-23",
+    "success": 3502,
+    "failed": 5
+  },
+  {
+    "date": "2025-09-24",
+    "success": 3006,
+    "failed": 11
+  },
+  {
+    "date": "2025-09-25",
+    "success": 2998,
+    "failed": 8
+  },
+  {
+    "date": "2025-09-26",
+    "success": 3731,
+    "failed": 5
+  },
+  {
+    "date": "2025-09-27",
+    "success": 3396,
+    "failed": 6
+  },
+  {
+    "date": "2025-09-28",
+    "success": 2853,
+    "failed": 6
+  },
+  {
+    "date": "2025-09-29",
+    "success": 2793,
+    "failed": 2
+  },
+  {
+    "date": "2025-09-30",
+    "success": 3567,
+    "failed": 5
+  },
+  {
+    "date": "2025-10-01",
+    "success": 2796,
+    "failed": 2
+  },
+  {
+    "date": "2025-10-02",
+    "success": 2963,
+    "failed": 12
+  },
+  {
+    "date": "2025-10-03",
+    "success": 3634,
+    "failed": 11
+  },
+  {
+    "date": "2025-10-04",
+    "success": 2976,
+    "failed": 2
+  },
+  {
+    "date": "2025-10-05",
+    "success": 2587,
+    "failed": 3
+  },
+  {
+    "date": "2025-10-06",
+    "success": 2742,
+    "failed": 7
+  },
+  {
+    "date": "2025-10-07",
+    "success": 3532,
+    "failed": 2
+  },
+  {
+    "date": "2025-10-08",
+    "success": 2971,
+    "failed": 7
+  },
+  {
+    "date": "2025-10-09",
+    "success": 3021,
+    "failed": 5
+  },
+  {
+    "date": "2025-10-10",
+    "success": 3749,
+    "failed": 17
+  },
+  {
+    "date": "2025-10-11",
+    "success": 3022,
+    "failed": 2
+  },
+  {
+    "date": "2025-10-12",
+    "success": 2766,
+    "failed": 3
+  },
+  {
+    "date": "2025-10-13",
+    "success": 2926,
+    "failed": 5
+  },
+  {
+    "date": "2025-10-14",
+    "success": 3570,
+    "failed": 7
+  },
+  {
+    "date": "2025-10-15",
+    "success": 2898,
+    "failed": 4
+  },
+  {
+    "date": "2025-10-16",
+    "success": 2987,
+    "failed": 4
+  },
+  {
+    "date": "2025-10-17",
+    "success": 3607,
+    "failed": 0
+  },
+  {
+    "date": "2025-10-18",
+    "success": 2999,
+    "failed": 9
+  },
+  {
+    "date": "2025-10-19",
+    "success": 2735,
+    "failed": 3
+  },
+  {
+    "date": "2025-10-20",
+    "success": 2811,
+    "failed": 0
+  },
+  {
+    "date": "2025-10-21",
+    "success": 3364,
+    "failed": 0
+  },
+  {
+    "date": "2025-10-22",
+    "success": 2810,
+    "failed": 3
+  },
+  {
+    "date": "2025-10-23",
+    "success": 3003,
+    "failed": 9
+  },
+  {
+    "date": "2025-10-24",
+    "success": 3459,
+    "failed": 10
+  },
+  {
+    "date": "2025-10-25",
+    "success": 2981,
+    "failed": 4
+  },
+  {
+    "date": "2025-10-26",
+    "success": 2608,
+    "failed": 3
+  },
+  {
+    "date": "2025-10-27",
+    "success": 2708,
+    "failed": 2
+  },
+  {
+    "date": "2025-10-28",
+    "success": 3182,
+    "failed": 4
+  },
+  {
+    "date": "2025-10-29",
+    "success": 2767,
+    "failed": 1
+  },
+  {
+    "date": "2025-10-30",
+    "success": 2703,
+    "failed": 1
+  },
+  {
+    "date": "2025-10-31",
+    "success": 3191,
+    "failed": 2
+  },
+  {
+    "date": "2025-11-01",
+    "success": 2876,
+    "failed": 9
+  },
+  {
+    "date": "2025-11-02",
+    "success": 2517,
+    "failed": 0
+  },
+  {
+    "date": "2025-11-03",
+    "success": 2396,
+    "failed": 133
+  },
+  {
+    "date": "2025-11-04",
+    "success": 3316,
+    "failed": 11
+  },
+  {
+    "date": "2025-11-05",
+    "success": 2791,
+    "failed": 6
+  },
+  {
+    "date": "2025-11-06",
+    "success": 2898,
+    "failed": 8
+  },
+  {
+    "date": "2025-11-07",
+    "success": 3485,
+    "failed": 17
+  },
+  {
+    "date": "2025-11-08",
+    "success": 3133,
+    "failed": 3
+  },
+  {
+    "date": "2025-11-09",
+    "success": 2649,
+    "failed": 0
+  },
+  {
+    "date": "2025-11-10",
+    "success": 2766,
+    "failed": 1
+  },
+  {
+    "date": "2025-11-11",
+    "success": 3953,
+    "failed": 3
+  },
+  {
+    "date": "2025-11-12",
+    "success": 2711,
+    "failed": 0
+  },
+  {
+    "date": "2025-11-13",
+    "success": 2909,
+    "failed": 3
+  },
+  {
+    "date": "2025-11-14",
+    "success": 3870,
+    "failed": 9
+  },
+  {
+    "date": "2025-11-15",
+    "success": 3263,
+    "failed": 3
+  },
+  {
+    "date": "2025-11-16",
+    "success": 2730,
+    "failed": 5
+  },
+  {
+    "date": "2025-11-17",
+    "success": 2651,
+    "failed": 6
+  },
+  {
+    "date": "2025-11-18",
+    "success": 3343,
+    "failed": 1
+  },
+  {
+    "date": "2025-11-19",
+    "success": 2836,
+    "failed": 3
+  },
+  {
+    "date": "2025-11-20",
+    "success": 2917,
+    "failed": 4
+  },
+  {
+    "date": "2025-11-21",
+    "success": 3822,
+    "failed": 7
+  },
+  {
+    "date": "2025-11-22",
+    "success": 3180,
+    "failed": 8
+  },
+  {
+    "date": "2025-11-23",
+    "success": 2679,
+    "failed": 6
+  },
+  {
+    "date": "2025-11-24",
+    "success": 3161,
+    "failed": 6
+  },
+  {
+    "date": "2025-11-25",
+    "success": 3630,
+    "failed": 4
+  },
+  {
+    "date": "2025-11-26",
+    "success": 3057,
+    "failed": 1
+  },
+  {
+    "date": "2025-11-27",
+    "success": 25,
+    "failed": 2
+  },
+  {
+    "date": "2025-11-28",
+    "success": 2228,
+    "failed": 0
+  },
+  {
+    "date": "2025-11-29",
+    "success": 2425,
+    "failed": 1
+  },
+  {
+    "date": "2025-11-30",
+    "success": 2347,
+    "failed": 10
+  }
+]

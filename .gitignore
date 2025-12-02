@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+.env
+.env.local
+playwright-report/
+test-results/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+.DS_Store
+result/
+database.duckdb
