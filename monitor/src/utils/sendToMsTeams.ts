@@ -41,6 +41,8 @@ function buildTableCell(fieldValue: any, style: string = "good") {
   }
 
   // Handle text fields - show as text
+  // Convert value to string, handling null/undefined but preserving false, 0, and empty strings
+  const textValue = value == null ? '' : String(value);
   return {
     type: "TableCell",
     style,
@@ -48,7 +50,7 @@ function buildTableCell(fieldValue: any, style: string = "good") {
       {
         type: "TextBlock",
         size: "small",
-        text: String(value || ''),
+        text: textValue,
         wrap: true,
       },
     ],
@@ -56,19 +58,12 @@ function buildTableCell(fieldValue: any, style: string = "good") {
 }
 
 /**
- * Build an adaptive card body with a table
- * @param title The title of the card
- * @param urls Optional array of URLs to add as action buttons
+ * Build a single table from table data and headers
  * @param tableData Array of row data objects
  * @param headers Array of header labels
- * @returns Adaptive card object
+ * @returns Table object
  */
-export function buildAdaptiveCard(
-  title: string,
-  tableData: Record<string, any>[],
-  headers: string[],
-  urls: string[] = []
-) {
+function buildTable(tableData: Record<string, any>[], headers: string[]) {
   // Build table rows from data
   const rows = tableData.map((row) => {
     const cells = headers.map((header) => {
@@ -99,6 +94,102 @@ export function buildAdaptiveCard(
     style: "accent",
   };
 
+  // Calculate column widths dynamically based on number of headers
+  const columnCount = headers.length;
+  const baseWidth = Math.floor(100 / columnCount);
+  const columns = Array(columnCount).fill(null).map(() => ({ width: baseWidth }));
+
+  return {
+    type: "Table",
+    gridStyle: "accent",
+    firstRowAsHeaders: true,
+    columns,
+    rows: [header, ...rows],
+  };
+}
+
+/**
+ * Extract headers from table data by getting keys from the first row
+ * @param tableData Array of row data objects
+ * @returns Array of header strings (field names)
+ */
+function extractHeaders(tableData: Record<string, any>[]): string[] {
+  if (!tableData || tableData.length === 0) {
+    return [];
+  }
+  
+  // Get all unique keys from all rows
+  const allKeys = new Set<string>();
+  tableData.forEach(row => {
+    if (row && typeof row === 'object') {
+      Object.keys(row).forEach(key => allKeys.add(key));
+    }
+  });
+  
+  return Array.from(allKeys);
+}
+
+/**
+ * Build an adaptive card body with multiple tables
+ * Headers are automatically extracted from field names in the table data
+ * @param title The title of the card
+ * @param tableData Array of table data arrays (each table can have different structure)
+ * @param urls Optional array of URLs to add as action buttons
+ * @returns Adaptive card object
+ * 
+ * @example
+ * // Multiple tables with different structures
+ * const tableData = [
+ *   [{ '#': 1, 'Name': 'Query 1', 'Total': 100 }], // Table 1: headers will be ['#', 'Name', 'Total']
+ *   [{ 'ID': 1, 'Status': 'OK', 'Count': 50 }] // Table 2: headers will be ['ID', 'Status', 'Count']
+ * ];
+ * buildAdaptiveCard('Title', tableData);
+ */
+export function buildAdaptiveCard(
+  title: string,
+  tableData: Record<string, any>[][],
+  urls: string[] = []
+) {
+  const body: any[] = [
+    {
+      type: "TextBlock",
+      size: "large",
+      text: title,
+      weight: "bolder",
+      color: "attention",
+      style: "heading",
+      wrap: true,
+    },
+  ];
+
+  // Process each table - extract headers from field names
+  // Collect valid tables first, then add them to body with separators
+  const tablesAdded: any[] = [];
+  for (let i = 0; i < tableData.length; i++) {
+    const currentTableData = tableData[i];
+    
+    if (currentTableData && currentTableData.length > 0) {
+      // Extract headers from field names
+      const currentHeaders = extractHeaders(currentTableData);
+      if (currentHeaders.length > 0) {
+        const table = buildTable(currentTableData, currentHeaders);
+        tablesAdded.push(table);
+      }
+    }
+  }
+  
+  // Add tables to body with separators between them (except after the last one)
+  for (let j = 0; j < tablesAdded.length; j++) {
+    body.push(tablesAdded[j]);
+    // Add separator between tables (except after the last one)
+    if (j < tablesAdded.length - 1) {
+      body.push({
+        type: "Separator",
+        spacing: "medium",
+      });
+    }
+  }
+
   // Build action buttons from URLs
   const actions = urls.map((url) => ({
     type: "Action.OpenUrl",
@@ -115,32 +206,7 @@ export function buildAdaptiveCard(
       width: "Full",
     },
     ...(actions.length > 0 && { actions }),
-    body: [
-      {
-        type: "TextBlock",
-        size: "large",
-        text: title,
-        weight: "bolder",
-        color: "attention",
-        style: "heading",
-        wrap: true,
-      },
-      {
-        type: "Table",
-        gridStyle: "accent",
-        firstRowAsHeaders: true,
-        columns: [ {
-          width: 5,
-        }, {
-          width: 10,
-        }, {
-          width: 15,
-        }, {
-          width: 70,
-        }],
-        rows: [header, ...rows],
-      },
-    ],
+    body,
   };
 
   return adaptiveCard;
@@ -173,6 +239,16 @@ export async function sendAdaptiveCardToMsTeams(
     ],
   };
 
+  // Log the message being sent for debugging
+  console.log('Sending to MS Teams webhook. Message structure:', {
+    type: message.type,
+    attachmentsCount: message.attachments.length,
+    contentType: message.attachments[0]?.contentType,
+    cardType: message.attachments[0]?.content?.type,
+    cardVersion: message.attachments[0]?.content?.version,
+    bodyItemsCount: message.attachments[0]?.content?.body?.length
+  });
+
   // Send to MS Teams webhook
   const response = await fetch(url, {
     method: 'POST',
@@ -184,6 +260,12 @@ export async function sendAdaptiveCardToMsTeams(
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error('MS Teams webhook error response:', {
+      status: response.status,
+      statusText: response.statusText,
+      errorText: errorText,
+      messageSent: JSON.stringify(message, null, 2)
+    });
     throw new Error(`Failed to send message to MS Teams: ${response.status} ${response.statusText}. ${errorText}`);
   }
 
@@ -193,19 +275,17 @@ export async function sendAdaptiveCardToMsTeams(
 /**
  * Build and send an adaptive card to MS Teams in one call
  * @param title The title of the card
- * @param tableData Array of row data objects
- * @param headers Array of header labels
+ * @param tableData Array of table data arrays (each table can have different structure)
  * @param urls Optional array of URLs to add as action buttons
  * @param webhookUrl Optional webhook URL (defaults to MS_TEAM_WEBHOOK_URL from .env)
  */
 export async function buildAndSendAdaptiveCard(
   title: string,
-  tableData: Record<string, any>[],
-  headers: string[],
+  tableData: Record<string, any>[][],
   urls: string[] = [],
   webhookUrl?: string
 ): Promise<void> {
-  const card = buildAdaptiveCard(title, tableData, headers, urls);
+  const card = buildAdaptiveCard(title, tableData, urls);
   await sendAdaptiveCardToMsTeams(card, webhookUrl);
 }
 
@@ -223,7 +303,6 @@ export function buildGroup1ColumnAdaptiveCard(
     name: { type: string; value: string };
     total: { type: string; value: number | null };
     groupedData: { type: string; value: any[] };
-    queryIndex: { type: string; value: number };
     screenshot: { type: string; value: string };
     description?: { type: string; value: string };
   }>,
@@ -428,7 +507,6 @@ export async function buildAndSendGroup1ColumnAdaptiveCard(
     name: { type: string; value: string };
     total: { type: string; value: number | null };
     groupedData: { type: string; value: any[] };
-    queryIndex: { type: string; value: number };
     screenshot: { type: string; value: string };
     description?: { type: string; value: string };
   }>,
@@ -456,7 +534,6 @@ export function buildGroup2ColumnAdaptiveCard(
     name: { type: string; value: string };
     total: { type: string; value: number | null };
     groupedData: { type: string; value: any[] };
-    queryIndex: { type: string; value: number };
     screenshot: { type: string; value: string };
     description?: { type: string; value: string };
   }>,
@@ -767,7 +844,6 @@ export async function buildAndSendGroup2ColumnAdaptiveCard(
     name: { type: string; value: string };
     total: { type: string; value: number | null };
     groupedData: { type: string; value: any[] };
-    queryIndex: { type: string; value: number };
     screenshot: { type: string; value: string };
     description?: { type: string; value: string };
   }>,

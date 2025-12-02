@@ -13,6 +13,7 @@
     "test:paypal-error": "source ./load-env.sh && playwright test src/graylog/scenarios/paypal.spec.ts",
     "test:failed-order": "source ./load-env.sh && playwright test src/graylog/scenarios/failed-order.spec.ts",
     "test:failed-payment": "source ./load-env.sh && playwright test src/graylog/scenarios/failed-payment.spec.ts",
+    "test:daily-eapi-multi-card": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-eapi-multi-card.spec.ts",
     "codegen": "playwright codegen",
     "install:browsers": "playwright install chromium",
     "upload:s3": "ts-node src/utils/uploadToS3.ts"

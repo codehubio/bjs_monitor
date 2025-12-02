@@ -80,7 +80,6 @@ test.describe('Daily EAPI Search', () => {
     const results: Array<{
       name: { type: string; value: string };
       total: { type: string; value: number | null };
-      queryIndex: { type: string; value: number };
       screenshot: { type: string; value: string };
     }> = [];
 
@@ -129,7 +128,6 @@ test.describe('Daily EAPI Search', () => {
       results.push({
         name: { type: 'text', value: query.name },
         total: { type: 'text', value: apiCount },
-        queryIndex: { type: 'text', value: i + 1 },
         screenshot: { type: 'image', value: screenshotFilename }
       });
     }
@@ -183,23 +181,13 @@ test.describe('Daily EAPI Search', () => {
 
     // Write results to JSON file (after S3 upload to include URLs)
     const jsonPath = path.join(resultsDir, 'results.json');
-    fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
+    fs.writeFileSync(jsonPath, JSON.stringify([results], null, 2));
     console.log(`\nResults written to: ${jsonPath}`);
 
     // Step 6: Send results to MS Teams
     if (config.msTeamWebhookUrl) {
       try {
         console.log(`\nSending results to MS Teams...`);
-        
-        // Prepare table data for adaptive card (pass structured fields directly)
-        const tableData = results.map((result) => ({
-          '#': result.queryIndex,
-          'Name': result.name,
-          'Total': result.total,
-          'Screenshot': result.screenshot,
-        }));
-
-        const headers = ['#', 'Name', 'Total', 'Screenshot'];
         
         // Build URLs array (S3 path if available)
         const urls: string[] = [];
@@ -209,7 +197,9 @@ test.describe('Daily EAPI Search', () => {
 
         const title = `Report status - ${fromTime} to ${toTime}`;
         
-        await buildAndSendAdaptiveCard(title, tableData, headers, urls);
+        // Pass results as array of arrays - wrap single array in another array
+        // Headers will be automatically extracted from field names
+        await buildAndSendAdaptiveCard(title, [results], urls);
         console.log('Message sent to MS Teams successfully');
       } catch (error) {
         console.error('Failed to send message to MS Teams:', error);

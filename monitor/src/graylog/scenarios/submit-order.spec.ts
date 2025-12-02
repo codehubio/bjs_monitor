@@ -5,7 +5,7 @@ import queries, { GROUP_BY_COLUMN } from '../searchText/submit-order';
 import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
-import { buildAndSendGroup1ColumnAdaptiveCard } from '../../utils/sendToMsTeams';
+import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
 import { GraylogApiService } from '../api.service';
 
 /**
@@ -266,17 +266,15 @@ test.describe('Submit Order Search', () => {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
 
-    // Array to store results (before S3 upload, screenshots are just filenames)
-    const results: Array<{
+    // Array to store results in new format: [nameAndTotal[], screenshots[], groupedDataValues[]]
+    const nameAndTotalArray: Array<{
       name: { type: string; value: string };
       total: { type: string; value: number | null };
-      groupedData: { type: string; value: any };
-      queryIndex: { type: string; value: number };
-      screenshot: { type: string; value: string };
-      description?: { type: string; value: string };
-      minOrderNotification?: { type: string; value: { notify: boolean; reason: string } };
-      maxOrderNotification?: { type: string; value: { notify: boolean; reason: string } };
     }> = [];
+    const screenshotsArray: Array<{
+      screenshot: { type: string; value: string };
+    }> = [];
+    const groupedDataValuesArray: any[] = [];
 
     // Step 4: Loop through each query and execute the same task
     let currentViewId = config.graylogSubmitOrderSearchView;
@@ -309,8 +307,21 @@ test.describe('Submit Order Search', () => {
           GROUP_BY_COLUMN,
           streamIds
         );
-        groupedData = apiResult.groupedData;
-        totalCount = groupedData.reduce((sum, item) => sum + (item.count || 0), 0);
+        // Transform groupedData to structured format with type and value
+        groupedData = apiResult.groupedData.map((item: any) => {
+          const transformedItem: any = {};
+          // Transform each field in the item to {type, value} format
+          for (const key in item) {
+            if (item.hasOwnProperty(key)) {
+              transformedItem[key] = {
+                type: 'text',
+                value: item[key]
+              };
+            }
+          }
+          return transformedItem;
+        });
+        totalCount = apiResult.groupedData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
         console.log(`API Query Grouped Results:`, groupedData);
         console.log(`API Query Total Count: ${totalCount}`);
       } catch (error) {
@@ -328,15 +339,15 @@ test.describe('Submit Order Search', () => {
       await page.screenshot({ path: screenshotPath, fullPage: true });
       console.log(`Screenshot saved: ${screenshotPath}`);
 
-      // Store result with field types (screenshot will be updated with S3 URL after upload)
-      // Store groupedData as JSON object (will be properly serialized when writing to JSON file)
-      results.push({
+      // Add to arrays for new format
+      nameAndTotalArray.push({
         name: { type: 'text', value: query.name },
-        total: { type: 'text', value: totalCount },
-        groupedData: { type: 'text', value: groupedData },
-        queryIndex: { type: 'text', value: i + 1 },
+        total: { type: 'text', value: totalCount }
+      });
+      screenshotsArray.push({
         screenshot: { type: 'image', value: screenshotFilename }
       });
+      groupedDataValuesArray.push(groupedData);
     }
 
     // Step 5: Upload results folder to S3 with custom prefix
@@ -374,9 +385,9 @@ test.describe('Submit Order Search', () => {
       }
       
       // Update screenshot values with public S3 URLs
-      results.forEach((result) => {
-        const screenshotFilename = result.screenshot.value;
-        result.screenshot.value = `${s3BaseUrl}/${screenshotFilename}`;
+      screenshotsArray.forEach((screenshotItem) => {
+        const screenshotFilename = screenshotItem.screenshot.value;
+        screenshotItem.screenshot.value = `${s3BaseUrl}/${screenshotFilename}`;
       });
       
       console.log('Upload to S3 completed successfully');
@@ -394,21 +405,21 @@ test.describe('Submit Order Search', () => {
       // Extract date from fromTime (format: 'YYYY-MM-DD HH:mm:ss' -> 'YYYY-MM-DD')
       const dateFromTime = fromTime.split(' ')[0]; // Extract date part
       
-      // Get successful and failed orders from results
+      // Get successful and failed orders from groupedDataValuesArray
       // Successful orders have eapi_err_desc = "(Empty Value)"
       // Failed orders are all other entries in groupedData
       let totalSuccess = 0;
       let totalFailed = 0;
       
-      if (results.length > 0) {
-        const firstResult = results[0];
-        const groupedData = firstResult.groupedData.value as any[];
+      if (groupedDataValuesArray.length > 0) {
+        const firstGroupedData = groupedDataValuesArray[0];
         
-        if (groupedData && Array.isArray(groupedData)) {
+        if (firstGroupedData && Array.isArray(firstGroupedData)) {
           // Sum counts directly from grouped data
-          groupedData.forEach((item) => {
-            const count = item.count || 0;
-            const errDesc = item.eapi_err_desc;
+          firstGroupedData.forEach((item) => {
+            // Access values from structured format {type, value}
+            const count = (item.count?.value ?? item.count) || 0;
+            const errDesc = item.eapi_err_desc?.value ?? item.eapi_err_desc;
             
             // Successful orders have eapi_err_desc = "(Empty Value)"
             if (errDesc === "(Empty Value)") {
@@ -500,30 +511,56 @@ test.describe('Submit Order Search', () => {
     //   });
     // }
 
+    // Build final results array where each element is a table (array of objects)
+    // [nameAndTotalArray, minOrderNotification (if present), maxOrderNotification (if present), screenshotsArray, ...groupedDataArrays]
+    const results: any[] = [nameAndTotalArray];
+    
+    // Add notifications as 2nd and 3rd elements if present (convert to table format)
+    if (minOrderNotification) {
+      results.push([{
+        Name: { type: 'text', value: 'minOrderNotification' },
+        Notify: { type: 'text', value: minOrderNotification.notify },
+        Reason: { type: 'text', value: minOrderNotification.reason }
+      }]);
+    }
+    if (maxOrderNotification) {
+      results.push([{
+        Name: { type: 'text', value: 'maxOrderNotification' },
+        Notify: { type: 'text', value: maxOrderNotification.notify },
+        Reason: { type: 'text', value: maxOrderNotification.reason }
+      }]);
+    }
+    
+    // Add screenshots
+    results.push(screenshotsArray);
+    
+    // Add each groupedData as a separate table (flatten groupedDataValuesArray)
+    groupedDataValuesArray.forEach((groupedData) => {
+      if (groupedData && Array.isArray(groupedData) && groupedData.length > 0) {
+        results.push(groupedData);
+      }
+    });
+
     // Write results to JSON file (after S3 upload and notification calculation)
     const jsonPath = path.join(resultsDir, 'results.json');
     fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
     console.log(`\nResults written to: ${jsonPath}`);
 
-    // Step 7: Combine notification text and add to description field before sending to MS Teams
-    if (results.length > 0) {
-      const descriptionParts: string[] = [];
-      
-      if (minOrderNotification && minOrderNotification.notify) {
-        descriptionParts.push(`Min Order Alert: ${minOrderNotification.reason}`);
+    // Step 7: Combine notification text and prepare for MS Teams
+    let descriptionText = '';
+    if (minOrderNotification && minOrderNotification.notify) {
+      descriptionText += `Min Order Alert: ${minOrderNotification.reason}`;
+    }
+    
+    if (maxOrderNotification && maxOrderNotification.notify) {
+      if (descriptionText) {
+        descriptionText += '\n\n';
       }
-      
-      if (maxOrderNotification && maxOrderNotification.notify) {
-        descriptionParts.push(`Max Order Alert: ${maxOrderNotification.reason}`);
-      }
-      
-      // Add description to the first result if there's any notification text
-      if (descriptionParts.length > 0) {
-        results[0].description = { type: 'text', value: descriptionParts.join('\n\n') };
-      }
+      descriptionText += `Max Order Alert: ${maxOrderNotification.reason}`;
     }
 
-    // Step 8: Send results to MS Teams
+    // Step 8: Send results to MS Teams using buildAndSendAdaptiveCard
+    // Results array is already structured as an array of tables - pass directly
     if (config.msTeamWebhookUrl) {
       try {
         console.log(`\nSending results to MS Teams...`);
@@ -536,7 +573,9 @@ test.describe('Submit Order Search', () => {
 
         const title = `Submit Order Report - ${fromTime} to ${toTime}`;
         
-        await buildAndSendGroup1ColumnAdaptiveCard(title, results, GROUP_BY_COLUMN, urls);
+        // Pass results directly - each element is already a table array
+        // Headers will be automatically extracted from field names
+        await buildAndSendAdaptiveCard(title, [results[0], results[3], , results[4], , results[5]], urls);
         console.log('Message sent to MS Teams successfully');
       } catch (error) {
         console.error('Failed to send message to MS Teams:', error);
