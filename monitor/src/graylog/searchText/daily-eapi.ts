@@ -34,6 +34,11 @@ const queries =[{
   "query": "eapi_method:SubmitOrder AND (NOT \"Order is submitted successfully.\") AND (NOT eapi_direction:Started)",
   "view": config.graylogFailedOrderSearchView,
   "groupBy": ["eapi_err_desc", "eapi_cor_id", "eapi_customer_id", "eapi_loyalty_id"]
+}, {
+  "name": "Paypal",
+  "query": "userflow_action:(ERR_PAYPAL_PAYMENT_EAPI_MP OR ERR_PAYPAL_PAYMENT_PAGE_LOAD OR ERR_PAYPAL_PAYMENT_VALIDATION OR ERR_PAYPAL_PAYMENT_EAPI OR ERR_PAYPAL_PAYMENT_PAGE_LOAD_MP OR ERR_PAYPAL_PAYMENT_VALIDATION_MP OR ERR_PAYPAL_PAYMENT_EAPI_MP OR COMPLETE_PAYPAL_PAYMENT OR APPROVE_PAYPAL_PAYMENT)",
+  "view": config.graylogPaypalSearchView,
+  "groupBy": ["userflow_action"]
 }]
 
 export default queries;
