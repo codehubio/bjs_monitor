@@ -7,7 +7,8 @@ import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
 import { GraylogApiService } from '../api.service';
-import { buildS3BaseUrl } from '../../utils/utils';
+import { buildDateTimeFolder, buildS3BaseUrl } from '../../utils/utils';
+import { buildFailedPaymentBlock } from '../blocks/failed-payment.block';
 
 
 function calculateMinOrderNotification(
@@ -219,13 +220,8 @@ test.describe('Daily EAPI Search', () => {
     await graylogHelper.selectTimeRange(fromTime, toTime);
 
     // Generate datetime string in format dd-mm-yy-hh-MM
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = String(now.getFullYear()).slice(-2);
-    const hour = String(now.getHours()).padStart(2, '0');
-    const minute = String(now.getMinutes()).padStart(2, '0');
-    const datetimeFolder = `${year}-${month}-${day}-${hour}-${minute}`;
+    const datetimeFolder = buildDateTimeFolder();
+    const prefix =`daily-eapi/${datetimeFolder}`
 
     // Create results directory with datetime folder
     const resultsDir = path.resolve(process.cwd(), 'src','graylog','result', 'daily-eapi', datetimeFolder);
@@ -282,7 +278,7 @@ test.describe('Daily EAPI Search', () => {
       singleQueryResults.push({
         name: { type: 'text', value: query.name },
         total: { type: 'text', value: apiCount },
-        screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, 'daily-eapi', datetimeFolder, screenshotFilename) }
+        screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }
       });
     }
     results.push([{'EAPI Report':{ type: 'separator' }}]);  
@@ -423,7 +419,7 @@ test.describe('Daily EAPI Search', () => {
     await page.screenshot({ path: screenshotPathSubmitOrder, fullPage: true });
     console.log(`Screenshot saved: ${screenshotPathSubmitOrder}`);
     // Add to arrays for new format
-    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, 'daily-eapi', datetimeFolder, screenshotFilenameSubmitOrder) }}]);
+    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenameSubmitOrder) }}]);
     results.push([{
       name: { type: 'text', value: submitOrderQuery.name },
       total: { type: 'text', value: totalCount }
@@ -499,7 +495,7 @@ test.describe('Daily EAPI Search', () => {
       name: { type: 'text', value: failedOrderQuery.name },
       total: { type: 'text', value: totalCount }
     }]);
-    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, 'daily-eapi', datetimeFolder, screenshotFilenameFailedOrder) }}]);
+    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenameFailedOrder) }}]);
     results.push(groupedDataFailedOrder);
     
     const paypalQuery = queries[singleQueriesCount + 2] as any;
@@ -556,11 +552,11 @@ test.describe('Daily EAPI Search', () => {
       name: { type: 'text', value: paypalQuery.name },
       total: { type: 'text', value: totalCountPaypal }
     }]);
-    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, 'daily-eapi', datetimeFolder, screenshotFilenamePaypal) }}]);
+    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenamePaypal) }}]);
     results.push(groupedDataPaypal);
 
-
-
+    const failedPaymentBlock = await buildFailedPaymentBlock(page, fromTime, toTime, prefix);
+    results.push(...failedPaymentBlock)
 
 
 
