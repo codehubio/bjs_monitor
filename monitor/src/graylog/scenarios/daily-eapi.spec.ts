@@ -96,6 +96,94 @@ function calculateMinOrderNotification(
     reason: reason
   };
 }
+
+function calculateMaxOrderNotification(
+  currentDate: string,
+  totalOrders: number,
+  successOrders: number,
+  orderData: Array<{ date: string; success: number; failed: number }>
+): { notify: boolean; reason: string } {
+  const reasons: string[] = [];
+  let shouldNotify = false;
+
+  // Condition 1: Check if total or success is in top 5% highest
+  if (orderData.length > 0) {
+    // Get all historical totals and successes
+    const allTotals = orderData.map(item => item.success + item.failed).filter(v => v > 0);
+    const allSuccesses = orderData.map(item => item.success).filter(v => v > 0);
+    
+    if (allTotals.length > 0 && allSuccesses.length > 0) {
+      // Sort to find 95th percentile (top 5%)
+      const sortedTotals = [...allTotals].sort((a, b) => a - b);
+      const sortedSuccesses = [...allSuccesses].sort((a, b) => a - b);
+      
+      // Calculate 95th percentile index (95% of data, meaning top 5%)
+      const percentile95Index = Math.max(0, Math.floor(sortedTotals.length * 0.95));
+      const percentile95Total = sortedTotals[percentile95Index];
+      const percentile95Success = sortedSuccesses[percentile95Index];
+      
+      // Check if current values are in top 5% highest
+      if (totalOrders >= percentile95Total) {
+        shouldNotify = true;
+        reasons.push(`Total orders (${totalOrders}) is in top 5% highest (threshold: ${percentile95Total})`);
+      }
+      
+      if (successOrders >= percentile95Success) {
+        shouldNotify = true;
+        reasons.push(`Successful orders (${successOrders}) is in top 5% highest (threshold: ${percentile95Success})`);
+      }
+    }
+  }
+
+  // Condition 2: Check if total or success is higher than 7 previous 7-day periods by more than 200
+  const currentDateObj = new Date(currentDate);
+  const previousPeriods: string[] = [];
+  
+  // Calculate dates for 7 previous 7-day periods (7, 14, 21, 28, 35, 42, 49 days ago)
+  for (let daysAgo = 7; daysAgo <= 49; daysAgo += 7) {
+    const previousDate = new Date(currentDateObj);
+    previousDate.setDate(previousDate.getDate() - daysAgo);
+    const previousDateStr = previousDate.toISOString().split('T')[0];
+    previousPeriods.push(previousDateStr);
+  }
+  
+  // Find data for previous periods
+  const previousData = previousPeriods.map(date => {
+    return orderData.find(item => item.date === date);
+  }).filter(item => item !== undefined) as Array<{ date: string; success: number; failed: number }>;
+  
+  // Compare with each previous period
+  previousData.forEach(prev => {
+    const prevTotal = prev.success + prev.failed;
+    const prevSuccess = prev.success;
+    const totalDiff = totalOrders - prevTotal;
+    const successDiff = successOrders - prevSuccess;
+    
+    if (totalDiff > 200) {
+      shouldNotify = true;
+      reasons.push(`Total orders (${totalOrders}) is ${totalDiff} higher than ${prev.date} (${prevTotal}), difference > 200`);
+    }
+    
+    if (successDiff > 200) {
+      shouldNotify = true;
+      reasons.push(`Successful orders (${successOrders}) is ${successDiff} higher than ${prev.date} (${prevSuccess}), difference > 200`);
+    }
+  });
+
+  // Build reason string
+  let reason = '';
+  if (shouldNotify) {
+    reason = reasons.join('; ');
+  } else {
+    reason = 'No conditions met: Total and successful orders are within normal range';
+  }
+
+  return {
+    notify: shouldNotify,
+    reason: reason
+  };
+}
+
 test.describe('Daily EAPI Search', () => {
   test('should login, report daily eapi, wait for results', async ({ page }) => {
     const graylogHelper = new GraylogHelper(page);
@@ -239,6 +327,91 @@ test.describe('Daily EAPI Search', () => {
       console.log(error);
     }
     console.log(`groupedData:`, JSON.stringify(groupedData, null, 2));
+    
+    // Calculate success/failed, minOrderNotification, and maxOrderNotification, then update order_data.json
+    try {
+      // Extract date from fromTime (format: 'YYYY-MM-DD HH:mm:ss' -> 'YYYY-MM-DD')
+      const dateFromTime = fromTime.split(' ')[0]; // Extract date part
+      
+      // Get successful and failed orders from groupedData
+      // Successful orders have eapi_err_desc = "(Empty Value)"
+      // Failed orders are all other entries in groupedData
+      let totalSuccess = 0;
+      let totalFailed = 0;
+      
+      if (groupedData && Array.isArray(groupedData) && groupedData.length > 0) {
+        // Sum counts directly from grouped data
+        groupedData.forEach((item) => {
+          // Access values from structured format {type, value}
+          const count = (item.count?.value ?? item.count) || 0;
+          const errDesc = item.eapi_err_desc?.value ?? item.eapi_err_desc;
+          
+          // Successful orders have eapi_err_desc = "(Empty Value)"
+          if (errDesc === "(Empty Value)") {
+            totalSuccess += count;
+          } else {
+            // All other entries are failed orders
+            totalFailed += count;
+          }
+        });
+      }
+      
+      // Read existing order_data.json
+      const orderDataPath = path.resolve(process.cwd(), 'src', 'data', 'order_data.json');
+      let orderData: Array<{ date: string; success: number; failed: number }> = [];
+      
+      if (fs.existsSync(orderDataPath)) {
+        const existingData = fs.readFileSync(orderDataPath, 'utf-8');
+        orderData = JSON.parse(existingData);
+      }
+      
+      // Calculate minOrderNotification and maxOrderNotification before updating order_data.json
+      const totalOrders = totalSuccess + totalFailed;
+      minOrderNotification = calculateMinOrderNotification(
+        dateFromTime,
+        totalOrders,
+        totalSuccess,
+        orderData
+      );
+      
+      maxOrderNotification = calculateMaxOrderNotification(
+        dateFromTime,
+        totalOrders,
+        totalSuccess,
+        orderData
+      );
+      
+      console.log(`\nMin Order Notification:`, JSON.stringify(minOrderNotification, null, 2));
+      console.log(`\nMax Order Notification:`, JSON.stringify(maxOrderNotification, null, 2));
+      
+      // Find or create entry for this date
+      const existingIndex = orderData.findIndex(item => item.date === dateFromTime);
+      
+      if (existingIndex >= 0) {
+        // Update existing entry
+        orderData[existingIndex].success = totalSuccess;
+        orderData[existingIndex].failed = totalFailed;
+        console.log(`\nUpdated order_data.json for date ${dateFromTime}: success=${totalSuccess}, failed=${totalFailed}`);
+      } else {
+        // Add new entry (keep sorted by date)
+        orderData.push({
+          date: dateFromTime,
+          success: totalSuccess,
+          failed: totalFailed
+        });
+        // Sort by date
+        orderData.sort((a, b) => a.date.localeCompare(b.date));
+        console.log(`\nAdded new entry to order_data.json for date ${dateFromTime}: success=${totalSuccess}, failed=${totalFailed}`);
+      }
+      
+      // Write updated data back to file
+      fs.writeFileSync(orderDataPath, JSON.stringify(orderData, null, 2));
+      console.log(`Order data written to: ${orderDataPath}`);
+    } catch (error) {
+      console.error('Failed to update order_data.json:', error);
+      // Don't fail the test if order_data.json update fails
+    }
+    
       // Enter the search query and submit
       // The function will automatically submit (press Enter) and wait for the API response
     await graylogHelper.enterQueryText(submitOrderQuery.query);
@@ -254,6 +427,23 @@ test.describe('Daily EAPI Search', () => {
       name: { type: 'text', value: submitOrderQuery.name },
       total: { type: 'text', value: totalCount }
     }]);
+    
+    // Add notifications as tables if present (convert to table format)
+    if (minOrderNotification) {
+      results.push([{
+        Name: { type: 'text', value: 'minOrderNotification' },
+        Notify: { type: 'text', value: minOrderNotification.notify },
+        Reason: { type: 'text', value: minOrderNotification.reason }
+      }]);
+    }
+    if (maxOrderNotification) {
+      results.push([{
+        Name: { type: 'text', value: 'maxOrderNotification' },
+        Notify: { type: 'text', value: maxOrderNotification.notify },
+        Reason: { type: 'text', value: maxOrderNotification.reason }
+      }]);
+    }
+    
     results.push(groupedData);
    
     
