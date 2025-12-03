@@ -9,7 +9,7 @@ export const config = {
   graylogEapiStream: process.env.GRAYLOG_EAPI_STREAM || '',
   graylogUserFlowStream: process.env.GRAYLOG_USER_FLOW_STREAM || '',
   graylogSearchViewId: process.env.GRAYLOG_SEARCH_VIEW_ID || '',
-  graylogFailedPaymentSearchView: process.env.GRAYLOG_FAILED_PAYMENT_SEARCH_VIEW || '',
+  graylogPaymentSearchView: process.env.GRAYLOG_PAYMENT_SEARCH_VIEW || '',
   graylogDailyEapiSearchView: process.env.GRAYLOG_DAILY_EAPI_SEARCH_VIEW || '',
   graylogSubmitOrderSearchView: process.env.GRAYLOG_SUBMIT_ORDER_SEARCH_VIEW || '',
   graylogPaypalSearchView: process.env.GRAYLOG_PAYPAL_SEARCH_VIEW || '',
