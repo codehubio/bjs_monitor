@@ -191,6 +191,9 @@ export function buildAdaptiveCard(
     url,
   }));
 
+  // Combine title with tables
+  const finalBody = [...body, ...tablesAdded];
+
   // Build the adaptive card
   const adaptiveCard = {
     type: "AdaptiveCard",
@@ -200,7 +203,7 @@ export function buildAdaptiveCard(
       width: "Full",
     },
     ...(actions.length > 0 && { actions }),
-    body: tablesAdded
+    body: finalBody
   };
 
   return adaptiveCard;
