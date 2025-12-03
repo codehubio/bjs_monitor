@@ -164,7 +164,7 @@ export function buildAdaptiveCard(
 
   // Process each table - extract headers from field names
   // Collect valid tables first, then add them to body with separators
-  const tablesAdded: any[] = [];
+  let  tablesAdded: any[] = [];
   for (let i = 0; i < tableData.length; i++) {
     const currentTableData = tableData[i];
     
@@ -173,20 +173,8 @@ export function buildAdaptiveCard(
       const currentHeaders = extractHeaders(currentTableData);
       if (currentHeaders.length > 0) {
         const table = buildTable(currentTableData, currentHeaders);
-        tablesAdded.push(table);
+        tablesAdded = tablesAdded.concat(table);
       }
-    }
-  }
-  
-  // Add tables to body with separators between them (except after the last one)
-  for (let j = 0; j < tablesAdded.length; j++) {
-    body.push(tablesAdded[j]);
-    // Add separator between tables (except after the last one)
-    if (j < tablesAdded.length - 1) {
-      body.push({
-        type: "Separator",
-        spacing: "medium",
-      });
     }
   }
 
@@ -206,7 +194,7 @@ export function buildAdaptiveCard(
       width: "Full",
     },
     ...(actions.length > 0 && { actions }),
-    body,
+    body: tablesAdded
   };
 
   return adaptiveCard;
