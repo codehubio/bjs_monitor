@@ -285,9 +285,10 @@ test.describe('Daily EAPI Search', () => {
         screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, 'daily-eapi', datetimeFolder, screenshotFilename) }
       });
     }
+    results.push([{'EAPI Report':{ type: 'separator' }}]);  
     results.push(singleQueryResults);
 
-
+    results.push([{'ORDER Report':{ type: 'separator' }}]);  
     // Step 2: Verify we're on the search view page (not login page)
     
     const submitOrderQuery = queries[singleQueriesCount] as any;
@@ -509,7 +510,7 @@ test.describe('Daily EAPI Search', () => {
 
 
 
-
+    results.push([{'PAYPAL Report':{ type: 'separator' }}]);  
     let groupedDataPaypal: any[] = [];
     let totalCountPaypal: number = 0;
     try {

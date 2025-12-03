@@ -65,7 +65,8 @@ function buildTableCell(fieldValue: any, style: string = "good") {
  */
 function buildTable(tableData: Record<string, any>[], headers: string[]) {
   // Build table rows from data
-  const rows = tableData.map((row) => {
+  const rows = (headers.length === 1 && tableData[0][headers[0]].type==='separator') 
+    ? [] :tableData.map((row) => {
     const cells = headers.map((header) => {
       const fieldValue = row[header] || '';
       return buildTableCell(fieldValue);
@@ -173,12 +174,6 @@ export function buildAdaptiveCard(
       const currentHeaders = extractHeaders(currentTableData);
       if (currentHeaders.length > 0) {
         const table = buildTable(currentTableData, currentHeaders);
-        // if (tablesAdded.length > 0) {
-        //   tablesAdded =  tablesAdded.concat({
-        //     type: "Separator",
-        //     spacing: "medium",
-        //   });
-        // }
         tablesAdded = tablesAdded.concat(table);
       }
     }
