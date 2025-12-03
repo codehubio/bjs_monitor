@@ -7,6 +7,7 @@ import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
 import { GraylogApiService } from '../api.service';
+import { buildS3BaseUrl } from '../../utils/utils';
 
 test.describe('Daily EAPI Search', () => {
   test('should login, report daily eapi, wait for results', async ({ page }) => {
@@ -77,15 +78,13 @@ test.describe('Daily EAPI Search', () => {
     }
 
     // Array to store results (before S3 upload, screenshots are just filenames)
-    const results: Array<{
-      name: { type: string; value: string };
-      total: { type: string; value: number | null };
-      screenshot: { type: string; value: string };
-    }> = [];
+    const results: any [][]= [];
+    const singleQueryResults: any []= [];
 
     // Step 4: Loop through each query and execute the same task
     let currentViewId = config.graylogDailyEapiSearchView;
-    for (let i = 0; i < queries.length; i++) {
+    const singleQueriesCount = 6;
+    for (let i = 0; i < singleQueriesCount; i++) {
       const query = queries[i] as any;
       console.log(`\n=== Processing Query ${i + 1}/${queries.length} ===`);
       console.log('Query Name:', query.name);
@@ -125,53 +124,69 @@ test.describe('Daily EAPI Search', () => {
       console.log(`Screenshot saved: ${screenshotPath}`);
 
       // Store result with field types (screenshot will be updated with S3 URL after upload)
-      results.push({
+      singleQueryResults.push({
         name: { type: 'text', value: query.name },
         total: { type: 'text', value: apiCount },
-        screenshot: { type: 'image', value: screenshotFilename }
+        screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, 'daily-eapi', datetimeFolder, screenshotFilename) }
       });
     }
+    results.push(singleQueryResults);
 
+    const submitOrderQuery = queries[singleQueriesCount] as any;
+    let groupedData: any[] = [];
+    let totalCount: number = 0;
+    try {
+      const apiResult = await graylogApi.executeCountAndGroupBy1ColumnQueryByStreamIdsAndWait(
+        submitOrderQuery.query,
+        fromTimeISO,
+        toTimeISO,
+        submitOrderQuery.groupBy[0],
+        [config.graylogEapiStream]
+      );
+      // Transform groupedData to structured format with type and value
+      groupedData = apiResult.groupedData.map((item: any) => {
+        const transformedItem: any = {};
+        // Transform each field in the item to {type, value} format
+        for (const key in item) {
+          if (item.hasOwnProperty(key)) {
+            transformedItem[key] = {
+              type: 'text',
+              value: item[key]
+            };
+          }
+        }
+        return transformedItem;
+      });
+      totalCount = apiResult.groupedData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
+      console.log(`API Query Grouped Results:`, groupedData);
+      console.log(`API Query Total Count: ${totalCount}`);
+    } catch (error) {
+      console.log(error);
+    }
+    console.log(`groupedData:`, JSON.stringify(groupedData, null, 2));
+      // Enter the search query and submit
+      // The function will automatically submit (press Enter) and wait for the API response
+    await graylogHelper.enterQueryText(submitOrderQuery.query);
+
+    // Take a screenshot for this query result (one screenshot for all grouped data)
+    const screenshotFilename = `query-${singleQueriesCount + 1}-result.png`;
+    const screenshotPath = path.join(resultsDir, screenshotFilename);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    console.log(`Screenshot saved: ${screenshotPath}`);
+    // Add to arrays for new format
+    results.push([{
+      name: { type: 'text', value: submitOrderQuery.name },
+      total: { type: 'text', value: totalCount }
+    }]);
+    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, 'daily-eapi', datetimeFolder, screenshotFilename) }}]);
+    results.push(groupedData);
+   
     // Step 5: Upload results folder to S3 with custom prefix
-    let s3BaseUrl = '';
     let s3Path = '';
     try {
       console.log(`\nUploading results folder to S3...`);
       const s3Prefix = config.s3Prefix || '';
       await uploadFolderToS3(resultsDir, `${s3Prefix}/daily-eapi`);
-      const fullPrefix = s3Prefix ? `${s3Prefix}/daily-eapi` : 'daily-eapi';
-      s3Path = `s3://${config.s3Bucket}/${fullPrefix}/${datetimeFolder}`;
-      
-      // Build public S3 URL for screenshots using BASE_S3_URL from .env
-      if (config.baseS3Url) {
-        // Use BASE_S3_URL if provided, ensuring it ends with a slash
-        const baseUrl = config.baseS3Url.endsWith('/') ? config.baseS3Url : `${config.baseS3Url}/`;
-        s3BaseUrl = `${baseUrl}${fullPrefix}/${datetimeFolder}`;
-      } else {
-        // Fallback to manual construction if BASE_S3_URL is not set
-        if (config.s3Endpoint) {
-          // Custom endpoint (e.g., MinIO, DigitalOcean Spaces)
-          if (config.s3ForcePathStyle) {
-            s3BaseUrl = `${config.s3Endpoint}/${config.s3Bucket}/${fullPrefix}/${datetimeFolder}`;
-          } else {
-            s3BaseUrl = `${config.s3Endpoint}/${fullPrefix}/${datetimeFolder}`;
-          }
-        } else {
-          // Standard AWS S3
-          if (config.s3ForcePathStyle) {
-            s3BaseUrl = `https://s3.${config.awsRegion}.amazonaws.com/${config.s3Bucket}/${fullPrefix}/${datetimeFolder}`;
-          } else {
-            s3BaseUrl = `https://${config.s3Bucket}.s3.${config.awsRegion}.amazonaws.com/${fullPrefix}/${datetimeFolder}`;
-          }
-        }
-      }
-      
-      // Update screenshot values with public S3 URLs
-      results.forEach((result) => {
-        const screenshotFilename = result.screenshot.value;
-        result.screenshot.value = `${s3BaseUrl}/${screenshotFilename}`;
-      });
-      
       console.log('Upload to S3 completed successfully');
     } catch (error) {
       console.error('Failed to upload to S3:', error);
@@ -181,7 +196,7 @@ test.describe('Daily EAPI Search', () => {
 
     // Write results to JSON file (after S3 upload to include URLs)
     const jsonPath = path.join(resultsDir, 'results.json');
-    fs.writeFileSync(jsonPath, JSON.stringify([results], null, 2));
+    fs.writeFileSync(jsonPath, JSON.stringify(results, null, 2));
     console.log(`\nResults written to: ${jsonPath}`);
 
     // Step 6: Send results to MS Teams
@@ -199,7 +214,7 @@ test.describe('Daily EAPI Search', () => {
         
         // Pass results as array of arrays - wrap single array in another array
         // Headers will be automatically extracted from field names
-        await buildAndSendAdaptiveCard(title, [results], urls);
+        await buildAndSendAdaptiveCard(title, results, urls);
         console.log('Message sent to MS Teams successfully');
       } catch (error) {
         console.error('Failed to send message to MS Teams:', error);
