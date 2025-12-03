@@ -184,6 +184,23 @@ export class GraylogHelper {
         });
       });
     }
+    const currentUrl = this.page.url();
+    expect(currentUrl).toContain('/search/');
+    expect(currentUrl).not.toContain('/login');
+    expect(currentUrl).not.toContain('/signin');
+
+    // Step 3: Verify page loaded successfully by checking for common search elements
+    // Wait for page to be fully loaded
+    await this.page.waitForLoadState('domcontentloaded');
+    
+    // Check for common elements that indicate the search view page is loaded
+    const pageLoaded = await Promise.race([
+      this.page.waitForSelector('nav', { timeout: 5000 }).then(() => true).catch(() => false),
+      this.page.waitForSelector('[class*="search"]', { timeout: 5000 }).then(() => true).catch(() => false),
+      this.page.waitForSelector('textarea', { timeout: 5000 }).then(() => true).catch(() => false),
+    ]);
+
+    expect(pageLoaded).toBe(true);
   }
 
   /**
