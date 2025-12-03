@@ -488,32 +488,9 @@ test.describe('Submit Order Search', () => {
       // Don't fail the test if order_data.json update fails
     }
 
-    // // Add minOrderNotification and maxOrderNotification to results
-    // if (minOrderNotification) {
-    //   results.push({
-    //     name: { type: 'text', value: 'minOrderNotification' },
-    //     total: { type: 'text', value: null },
-    //     groupedData: { type: 'text', value: null },
-    //     queryIndex: { type: 'text', value: 0 },
-    //     screenshot: { type: 'image', value: '' },
-    //     minOrderNotification: { type: 'text', value: minOrderNotification }
-    //   });
-    // }
-    
-    // if (maxOrderNotification) {
-    //   results.push({
-    //     name: { type: 'text', value: 'maxOrderNotification' },
-    //     total: { type: 'text', value: null },
-    //     groupedData: { type: 'text', value: null },
-    //     queryIndex: { type: 'text', value: 0 },
-    //     screenshot: { type: 'image', value: '' },
-    //     maxOrderNotification: { type: 'text', value: maxOrderNotification }
-    //   });
-    // }
-
     // Build final results array where each element is a table (array of objects)
     // [nameAndTotalArray, minOrderNotification (if present), maxOrderNotification (if present), screenshotsArray, ...groupedDataArrays]
-    const results: any[] = [nameAndTotalArray];
+    const results: any[] = [screenshotsArray, nameAndTotalArray];
     
     // Add notifications as 2nd and 3rd elements if present (convert to table format)
     if (minOrderNotification) {
@@ -531,8 +508,6 @@ test.describe('Submit Order Search', () => {
       }]);
     }
     
-    // Add screenshots
-    results.push(screenshotsArray);
     
     // Add each groupedData as a separate table (flatten groupedDataValuesArray)
     groupedDataValuesArray.forEach((groupedData) => {
@@ -575,7 +550,7 @@ test.describe('Submit Order Search', () => {
         
         // Pass results directly - each element is already a table array
         // Headers will be automatically extracted from field names
-        await buildAndSendAdaptiveCard(title, [results[0], results[3], , results[4], , results[5]], urls);
+        await buildAndSendAdaptiveCard(title, results, urls);
         console.log('Message sent to MS Teams successfully');
       } catch (error) {
         console.error('Failed to send message to MS Teams:', error);

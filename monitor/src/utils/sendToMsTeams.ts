@@ -173,6 +173,12 @@ export function buildAdaptiveCard(
       const currentHeaders = extractHeaders(currentTableData);
       if (currentHeaders.length > 0) {
         const table = buildTable(currentTableData, currentHeaders);
+        // if (tablesAdded.length > 0) {
+        //   tablesAdded =  tablesAdded.concat({
+        //     type: "Separator",
+        //     spacing: "medium",
+        //   });
+        // }
         tablesAdded = tablesAdded.concat(table);
       }
     }
