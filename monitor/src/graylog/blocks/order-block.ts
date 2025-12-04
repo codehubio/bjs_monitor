@@ -198,11 +198,6 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
     throw new Error('GRAYLOG_DAILY_EAPI_SEARCH_VIEW environment variable is not set');
   }
 
-  // Step 1: Login if needed and visit the search view page
-  await graylogHelper.loginAndVisitSearchView(config.graylogDailyEapiSearchView);
-
-  // Step 4: Click on the timerange type target div
-  await graylogHelper.selectTimeRange(fromTime, toTime);
 
   // Array to store results (before S3 upload, screenshots are just filenames)
   const results: any [][]= [];
@@ -315,8 +310,8 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
     // Transform to format expected by notification functions
     const orderDataForNotifications = dailyStats.map(item => ({
       date: item.date,
-      success: item.order.success,
-      failed: item.order.failed
+      success: item.order?.success || 0,
+      failed: item.order?.failed || 0
     }));
     
     // Calculate minOrderNotification and maxOrderNotification before updating daily-stats.json
@@ -343,8 +338,10 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
     
     if (existingIndex >= 0) {
       // Update existing entry
-      dailyStats[existingIndex].order.success = totalSuccess;
-      dailyStats[existingIndex].order.failed = totalFailed;
+      dailyStats[existingIndex].order = {
+        success: totalSuccess,
+        failed: totalFailed
+      }
       console.log(`\nUpdated daily-stats.json for date ${dateFromTime}: success=${totalSuccess}, failed=${totalFailed}`);
     } else {
       // Add new entry (keep sorted by date)

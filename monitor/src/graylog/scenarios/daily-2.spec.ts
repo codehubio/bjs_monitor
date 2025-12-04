@@ -22,7 +22,8 @@ test.describe('Daily 2 report', () => {
     const toTime = config.graylogQueryToTime;
 
     // Generate datetime string in format dd-mm-yy-hh-MM
-    const datetimeFolder = buildDateTimeFolder();
+    // const datetimeFolder = buildDateTimeFolder();
+    const datetimeFolder = fromTime.split(' ')[0];
     const prefix =`${FOLDER_PREFIX}/${datetimeFolder}`
 
     // Create results directory with datetime folder

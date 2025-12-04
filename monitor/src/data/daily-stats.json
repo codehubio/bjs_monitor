@@ -1,37 +1,5 @@
 [
   {
-    "date": "2025-11-29",
-    "eapi": {
-      "total": 148046,
-      "errors4xx": 63,
-      "errors5xx": 0,
-      "errorsOther": 2,
-      "httpErrors": [
-        {
-          "status": "401",
-          "count": 63
-        },
-        {
-          "status": "0",
-          "count": 2
-        }
-      ]
-    },
-    "openCheck": {
-      "count": 107
-    },
-    "payment": {
-      "mobile": {
-        "success": 71,
-        "failed": 8
-      },
-      "desktop": {
-        "success": 2352,
-        "failed": 287
-      }
-    }
-  },
-  {
     "date": "2025-11-30",
     "eapi": {
       "total": 142508,
@@ -64,15 +32,9 @@
     "openCheck": {
       "count": 101
     },
-    "payment": {
-      "mobile": {
-        "success": 61,
-        "failed": 4
-      },
-      "desktop": {
-        "success": 2270,
-        "failed": 340
-      }
+    "order": {
+      "success": 2347,
+      "failed": 10
     }
   },
   {
