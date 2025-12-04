@@ -245,7 +245,6 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   } catch (error) {
     console.log(error);
   }
-  console.log(`groupedData:`, JSON.stringify(groupedData, null, 2));
   
   // Calculate success/failed, minOrderNotification, and maxOrderNotification, then update daily-stats.json
   try {
@@ -441,7 +440,6 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   } catch (error) {
     console.log(error);
   }
-  console.log(`groupedData:`, JSON.stringify(groupedDataFailedOrder, null, 2));
     // Enter the search query and submit
     // The function will automatically submit (press Enter) and wait for the API response
   await graylogHelper.enterQueryText(failedOrderQuery.query);

@@ -7,6 +7,16 @@
     },
     "openCheck": {
       "count": 162
+    },
+    "payment": {
+      "mobile": {
+        "success": 98,
+        "failed": 3
+      },
+      "desktop": {
+        "success": 2935,
+        "failed": 393
+      }
     }
   }
 ]

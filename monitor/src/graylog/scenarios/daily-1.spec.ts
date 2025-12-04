@@ -31,9 +31,9 @@ test.describe('Daily 1 report', () => {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
     const results: any [][]= [];
-    // results.push([{'EAPI Report':{ type: 'separator' }}]);  
-    // const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
-    // results.push(...eapiBlock);
+    results.push([{'EAPI Report':{ type: 'separator' }}]);  
+    const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
+    results.push(...eapiBlock);
     
     results.push([{'Order Report':{ type: 'separator' }}]);  
     const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
