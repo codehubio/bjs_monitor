@@ -12,6 +12,7 @@ export const config = {
   graylogPaymentSearchView: process.env.GRAYLOG_PAYMENT_SEARCH_VIEW || '',
   graylogDailyEapiSearchView: process.env.GRAYLOG_DAILY_EAPI_SEARCH_VIEW || '',
   graylogSubmitOrderSearchView: process.env.GRAYLOG_SUBMIT_ORDER_SEARCH_VIEW || '',
+  graylogOpenCheckSearchView: process.env.GRAYLOG_OPEN_CHECK_SEARCH_VIEW || '',
   graylogPaypalSearchView: process.env.GRAYLOG_PAYPAL_SEARCH_VIEW || '',
   graylogFailedOrderSearchView: process.env.GRAYLOG_FAILED_ORDER_SEARCH_VIEW || '',
   graylogQueryFromTime: process.env.GRAYLOG_QUERY_FROM_TIME || '',

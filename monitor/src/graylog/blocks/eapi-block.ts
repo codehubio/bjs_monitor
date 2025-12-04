@@ -31,19 +31,11 @@ export async function buildEapiBlock(page: Page, fromTime: string, toTime: strin
       throw new Error('GRAYLOG_DAILY_EAPI_SEARCH_VIEW environment variable is not set');
     }
 
-    // Step 1: Login if needed and visit the search view page
-    await graylogHelper.loginAndVisitSearchView(config.graylogDailyEapiSearchView);
-
-    // Step 4: Click on the timerange type target div
-    await graylogHelper.selectTimeRange(fromTime, toTime);
-
     // Array to store results (before S3 upload, screenshots are just filenames)
     const singleQueryResults: any []= [];
 
     // Step 4: Loop through each query and execute the same task
-    let currentViewId = config.graylogDailyEapiSearchView;
-    const singleQueriesCount = 6;
-    for (let i = 0; i < singleQueriesCount; i++) {
+    for (let i = 0; i < queries.length; i++) {
       const query = queries[i] as any;
       console.log(`\n=== Processing Query ${i + 1}/${queries.length} ===`);
       console.log('Query Name:', query.name);
@@ -51,12 +43,9 @@ export async function buildEapiBlock(page: Page, fromTime: string, toTime: strin
 
       // Navigate to query-specific view if provided and different from current view
       const queryView = query.view || config.graylogDailyEapiSearchView;
-      if (query.view && query.view !== currentViewId) {
-        console.log(`Navigating to query-specific view: ${queryView}`);
-        await graylogHelper.loginAndVisitSearchView(queryView);
-        await graylogHelper.selectTimeRange(fromTime, toTime);
-        currentViewId = queryView;
-      }
+      console.log(`Navigating to query-specific view: ${queryView}`);
+      await graylogHelper.loginAndVisitSearchView(queryView);
+      await graylogHelper.selectTimeRange(fromTime, toTime);
 
       // Execute query using Graylog API client and wait for results
       let apiCount: number | null = null;

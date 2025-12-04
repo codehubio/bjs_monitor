@@ -9,6 +9,7 @@ import { buildPaymentBlock } from '../blocks/payment.block';
 import { buildEapiBlock } from '../blocks/eapi-block';
 import { buildOrderBlock } from '../blocks/order-block';
 import { buildPaypalBlock } from '../blocks/paypal-block';
+import { buildOpenCheckBlock } from '../blocks/open-check.block';
 
 
 
@@ -37,18 +38,23 @@ test.describe('Daily EAPI Search', () => {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
     const results: any [][]= [];
-    results.push([{'EAPI Report':{ type: 'separator' }}]);  
-    const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
-    results.push(...eapiBlock);
+    // results.push([{'EAPI Report':{ type: 'separator' }}]);  
+    // const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
+    // results.push(...eapiBlock);
     
-    results.push([{'Order Report':{ type: 'separator' }}]);  
-    const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
-    results.push(...orderBlock);
+    // results.push([{'Order Report':{ type: 'separator' }}]);  
+    // const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
+    // results.push(...orderBlock);
 
-    results.push([{'Paypal Report':{ type: 'separator' }}]);  
-    const paypalBlock = await buildPaypalBlock(page, fromTime, toTime, prefix);
-    results.push(...paypalBlock);
+    // results.push([{'Paypal Report':{ type: 'separator' }}]);  
+    // const paypalBlock = await buildPaypalBlock(page, fromTime, toTime, prefix);
+    // results.push(...paypalBlock);
 
+    results.push([{'Open Check Report':{ type: 'separator' }}]);  
+    const openCheckBlock = await buildOpenCheckBlock(page, fromTime, toTime, prefix);
+    results.push(...openCheckBlock);
+    
+    // results.push([{'Payment Report':{ type: 'separator' }}]);  
     // const failedPaymentBlock = await buildPaymentBlock(page, fromTime, toTime, prefix);
     // results.push(...failedPaymentBlock)
 
