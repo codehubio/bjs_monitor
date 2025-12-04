@@ -3,6 +3,7 @@ import { GraylogHelper } from '../helper';
 import { config } from '../../config';
 import queries from '../searchText/open-check';
 import * as path from 'path';
+import * as fs from 'fs';
 import { GraylogApiService } from '../api.service';
 import { buildS3BaseUrl } from '../../utils/utils';
 
@@ -29,6 +30,7 @@ export async function buildOpenCheckBlock(page: Page, fromTime: string, toTime: 
     // Check if search view ID is configured
 
     const singleQueryResults: any []= [];
+    let totalOpenCheckCount: number = 0;
 
     // Step 4: Loop through each query and execute the same task
     for (let i = 0; i < queries.length; i++) {
@@ -50,6 +52,7 @@ export async function buildOpenCheckBlock(page: Page, fromTime: string, toTime: 
         console.log(`\nExecuting query via API...`);
         const apiResult = await graylogApi.executeCountQueryByStreamIdsAndWait(query.query, fromTimeISO, toTimeISO, [config.graylogUserFlowStream]);
         apiCount = apiResult.count;
+        totalOpenCheckCount += apiCount || 0;
         console.log(`API Query Count: ${apiCount ?? 'N/A'}`);
       } catch (error) {
         console.error(`Error executing query via API:`, error);
@@ -73,6 +76,77 @@ export async function buildOpenCheckBlock(page: Page, fromTime: string, toTime: 
         screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }
       }]);
     }
+
+    // Write open check stats to daily-stats.json
+    try {
+      // Extract date from fromTime (format: 'YYYY-MM-DD HH:mm:ss' -> 'YYYY-MM-DD')
+      const dateFromTime = fromTime.split(' ')[0]; // Extract date part
+      
+      // Read existing daily-stats.json
+      const dailyStatsPath = path.resolve(process.cwd(), 'src', 'data', 'daily-stats.json');
+      type DailyStatsEntry = { date: string; order?: { success: number; failed: number }; openCheck?: { count: number }; [key: string]: any };
+      let dailyStats: DailyStatsEntry[] = [];
+      
+      if (fs.existsSync(dailyStatsPath)) {
+        const existingData = fs.readFileSync(dailyStatsPath, 'utf-8');
+        const parsed = JSON.parse(existingData);
+        
+        // Handle migration: convert old formats to new structure
+        if (Array.isArray(parsed)) {
+          // Check if it's the old format with direct success/failed or new format with order object
+          if (parsed.length > 0 && 'success' in parsed[0] && !('order' in parsed[0])) {
+            // Old format: [{date, success, failed}]
+            dailyStats = parsed.map((item: any) => ({
+              date: item.date,
+              order: {
+                success: item.success,
+                failed: item.failed
+              }
+            }));
+          } else {
+            // Already new format or empty array
+            dailyStats = parsed;
+          }
+        } else if (parsed && typeof parsed === 'object' && parsed.order && Array.isArray(parsed.order)) {
+          // Old format: {order: [{date, success, failed}]}
+          dailyStats = parsed.order.map((item: any) => ({
+            date: item.date,
+            order: {
+              success: item.success,
+              failed: item.failed
+            }
+          }));
+        } else {
+          dailyStats = [];
+        }
+      }
+      
+      // Find or create entry for this date
+      const existingIndex = dailyStats.findIndex(item => item.date === dateFromTime);
+      
+      if (existingIndex >= 0) {
+        // Update existing entry
+        dailyStats[existingIndex].openCheck = { count: totalOpenCheckCount };
+        console.log(`\nUpdated daily-stats.json for date ${dateFromTime}: openCheck count=${totalOpenCheckCount}`);
+      } else {
+        // Add new entry (keep sorted by date)
+        dailyStats.push({
+          date: dateFromTime,
+          openCheck: { count: totalOpenCheckCount }
+        });
+        // Sort by date
+        dailyStats.sort((a, b) => a.date.localeCompare(b.date));
+        console.log(`\nAdded new entry to daily-stats.json for date ${dateFromTime}: openCheck count=${totalOpenCheckCount}`);
+      }
+      
+      // Write updated data back to file
+      fs.writeFileSync(dailyStatsPath, JSON.stringify(dailyStats, null, 2));
+      console.log(`Open check stats written to: ${dailyStatsPath}`);
+    } catch (error) {
+      console.error('Failed to update daily-stats.json:', error);
+      // Don't fail the test if daily-stats.json update fails
+    }
+
     return singleQueryResults
 }
 

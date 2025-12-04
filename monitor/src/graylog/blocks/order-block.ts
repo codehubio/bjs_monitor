@@ -247,7 +247,7 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   }
   console.log(`groupedData:`, JSON.stringify(groupedData, null, 2));
   
-  // Calculate success/failed, minOrderNotification, and maxOrderNotification, then update order_data.json
+  // Calculate success/failed, minOrderNotification, and maxOrderNotification, then update daily-stats.json
   try {
     // Extract date from fromTime (format: 'YYYY-MM-DD HH:mm:ss' -> 'YYYY-MM-DD')
     const dateFromTime = fromTime.split(' ')[0]; // Extract date part
@@ -275,60 +275,99 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
       });
     }
     
-    // Read existing order_data.json
-    const orderDataPath = path.resolve(process.cwd(), 'src', 'data', 'order_data.json');
-    let orderData: Array<{ date: string; success: number; failed: number }> = [];
+    // Read existing daily-stats.json
+    const dailyStatsPath = path.resolve(process.cwd(), 'src', 'data', 'daily-stats.json');
+    type DailyStatsEntry = { date: string; order: { success: number; failed: number }; [key: string]: any };
+    let dailyStats: DailyStatsEntry[] = [];
     
-    if (fs.existsSync(orderDataPath)) {
-      const existingData = fs.readFileSync(orderDataPath, 'utf-8');
-      orderData = JSON.parse(existingData);
+    if (fs.existsSync(dailyStatsPath)) {
+      const existingData = fs.readFileSync(dailyStatsPath, 'utf-8');
+      const parsed = JSON.parse(existingData);
+      
+      // Handle migration: convert old formats to new structure
+      if (Array.isArray(parsed)) {
+        // Check if it's the old format with direct success/failed or new format with order object
+        if (parsed.length > 0 && 'success' in parsed[0] && !('order' in parsed[0])) {
+          // Old format: [{date, success, failed}]
+          dailyStats = parsed.map((item: any) => ({
+            date: item.date,
+            order: {
+              success: item.success,
+              failed: item.failed
+            }
+          }));
+        } else {
+          // Already new format or empty array
+          dailyStats = parsed;
+        }
+      } else if (parsed && typeof parsed === 'object' && parsed.order && Array.isArray(parsed.order)) {
+        // Old format: {order: [{date, success, failed}]}
+        dailyStats = parsed.order.map((item: any) => ({
+          date: item.date,
+          order: {
+            success: item.success,
+            failed: item.failed
+          }
+        }));
+      } else {
+        dailyStats = [];
+      }
     }
     
-    // Calculate minOrderNotification and maxOrderNotification before updating order_data.json
+    // Transform to format expected by notification functions
+    const orderDataForNotifications = dailyStats.map(item => ({
+      date: item.date,
+      success: item.order.success,
+      failed: item.order.failed
+    }));
+    
+    // Calculate minOrderNotification and maxOrderNotification before updating daily-stats.json
     const totalOrders = totalSuccess + totalFailed;
     minOrderNotification = calculateMinOrderNotification(
       dateFromTime,
       totalOrders,
       totalSuccess,
-      orderData
+      orderDataForNotifications
     );
     
     maxOrderNotification = calculateMaxOrderNotification(
       dateFromTime,
       totalOrders,
       totalSuccess,
-      orderData
+      orderDataForNotifications
     );
     
     console.log(`\nMin Order Notification:`, JSON.stringify(minOrderNotification, null, 2));
     console.log(`\nMax Order Notification:`, JSON.stringify(maxOrderNotification, null, 2));
     
     // Find or create entry for this date
-    const existingIndex = orderData.findIndex(item => item.date === dateFromTime);
+    const existingIndex = dailyStats.findIndex(item => item.date === dateFromTime);
     
     if (existingIndex >= 0) {
       // Update existing entry
-      orderData[existingIndex].success = totalSuccess;
-      orderData[existingIndex].failed = totalFailed;
-      console.log(`\nUpdated order_data.json for date ${dateFromTime}: success=${totalSuccess}, failed=${totalFailed}`);
+      dailyStats[existingIndex].order.success = totalSuccess;
+      dailyStats[existingIndex].order.failed = totalFailed;
+      console.log(`\nUpdated daily-stats.json for date ${dateFromTime}: success=${totalSuccess}, failed=${totalFailed}`);
     } else {
       // Add new entry (keep sorted by date)
-      orderData.push({
+      dailyStats.push({
         date: dateFromTime,
-        success: totalSuccess,
-        failed: totalFailed
+        order: {
+          success: totalSuccess,
+          failed: totalFailed
+        }
       });
       // Sort by date
-      orderData.sort((a, b) => a.date.localeCompare(b.date));
-      console.log(`\nAdded new entry to order_data.json for date ${dateFromTime}: success=${totalSuccess}, failed=${totalFailed}`);
+      dailyStats.sort((a, b) => a.date.localeCompare(b.date));
+      console.log(`\nAdded new entry to daily-stats.json for date ${dateFromTime}: success=${totalSuccess}, failed=${totalFailed}`);
     }
     
     // Write updated data back to file
-    fs.writeFileSync(orderDataPath, JSON.stringify(orderData, null, 2));
-    console.log(`Order data written to: ${orderDataPath}`);
+    fs.writeFileSync(dailyStatsPath, JSON.stringify(dailyStats, null, 2));
+    console.log(`Report stats written to: ${dailyStatsPath}`);
   } catch (error) {
-    console.error('Failed to update order_data.json:', error);
-    // Don't fail the test if order_data.json update fails
+    console.error('Failed to update daily-stats.json:', error);
+    // Don't fail the test if daily-stats.json update fails
   }
   
     // Enter the search query and submit
