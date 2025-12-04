@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { GraylogHelper } from '../helper';
 import { config } from '../../config';
-import queries, { GROUP_BY_COLUMN_1, GROUP_BY_COLUMN_2, GROUP_BY_COLUMN_3 } from '../searchText/failed-payment';
+import queries, { GROUP_BY_COLUMN_1, GROUP_BY_COLUMN_2, GROUP_BY_COLUMN_3 } from '../searchText/payment';
 import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendGroup2ColumnAdaptiveCard } from '../../utils/sendToMsTeams';
 import { GraylogApiService } from '../api.service';
-import { buildFailedPaymentBlock } from '../blocks/failed-payment.block';
+import { buildFailedPaymentBlock } from '../blocks/payment.block';
 import { buildDateTimeFolder } from '../../utils/utils';
 
 test.describe('Failed Payment Search', () => {

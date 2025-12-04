@@ -1,7 +1,7 @@
-import { test, expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { GraylogHelper } from '../helper';
 import { config } from '../../config';
-import queries from '../searchText/daily-eapi';
+import queries from '../searchText/eapi';
 import * as path from 'path';
 import { GraylogApiService } from '../api.service';
 import { buildS3BaseUrl } from '../../utils/utils';

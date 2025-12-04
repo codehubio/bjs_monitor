@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { GraylogHelper } from '../helper';
 import { config } from '../../config';
-import queries from '../searchText/daily-eapi';
+import queries from '../searchText/central';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GraylogApiService } from '../api.service';
@@ -209,7 +209,7 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
 
   // Step 2: Verify we're on the search view page (not login page)
   
-  const submitOrderQuery = queries[6] as any;
+  const submitOrderQuery = queries[0] as any;
   await graylogHelper.loginAndVisitSearchView(submitOrderQuery.view);
   await graylogHelper.selectTimeRange(fromTime, toTime);
   let minOrderNotification: { notify: boolean; reason: string } | null = null;
@@ -366,7 +366,7 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   results.push(groupedData);
  
   
-  const failedOrderQuery = queries[7] as any;
+  const failedOrderQuery = queries[1] as any;
   await graylogHelper.loginAndVisitSearchView(failedOrderQuery.view);
   await graylogHelper.selectTimeRange(fromTime, toTime);
   let groupedDataFailedOrder: any[] = [];

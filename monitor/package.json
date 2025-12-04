@@ -8,7 +8,7 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
-    "test:daily-eapi": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-eapi.spec.ts",
+    "test:daily": "source ./load-env.sh && playwright test src/graylog/scenarios/central.spec.ts",
     "test:submit-order": "source ./load-env.sh && playwright test src/graylog/scenarios/submit-order.spec.ts",
     "test:paypal-error": "source ./load-env.sh && playwright test src/graylog/scenarios/paypal.spec.ts",
     "test:failed-order": "source ./load-env.sh && playwright test src/graylog/scenarios/failed-order.spec.ts",

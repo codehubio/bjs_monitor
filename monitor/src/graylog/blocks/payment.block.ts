@@ -1,12 +1,11 @@
 import { GraylogHelper } from '../helper';
 import { config } from '../../config';
-import queries, { GROUP_BY_COLUMN_1, GROUP_BY_COLUMN_2, GROUP_BY_COLUMN_3 } from '../searchText/failed-payment';
-import * as fs from 'fs';
+import queries from '../searchText/payment';
 import * as path from 'path';
 import { GraylogApiService } from '../api.service';
-import { buildDateTimeFolder, buildS3BaseUrl } from '../../utils/utils';
+import { buildS3BaseUrl } from '../../utils/utils';
 import { Page } from '@playwright/test';
-export async function buildFailedPaymentBlock(page: Page, fromTime: string, toTime: string, prefix: string) {
+export async function buildPaymentBlock(page: Page, fromTime: string, toTime: string, prefix: string) {
   const graylogHelper = new GraylogHelper(page);
   const graylogApi = new GraylogApiService();
 
@@ -70,9 +69,9 @@ export async function buildFailedPaymentBlock(page: Page, fromTime: string, toTi
         query.query,
         fromTimeISO,
         toTimeISO,
-        GROUP_BY_COLUMN_1,
-        GROUP_BY_COLUMN_2,
-        GROUP_BY_COLUMN_3,
+        query.groupBy[0],
+        query.groupBy[1],
+        query.groupBy[2],
         streamIds
       );
       groupedData = apiResult.groupedData.map((item: any) => {

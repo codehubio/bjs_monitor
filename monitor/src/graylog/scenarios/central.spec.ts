@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
-import { buildDateTimeFolder, buildS3BaseUrl } from '../../utils/utils';
-import { buildFailedPaymentBlock } from '../blocks/failed-payment.block';
+import { buildDateTimeFolder } from '../../utils/utils';
+import { buildPaymentBlock } from '../blocks/payment.block';
 import { buildEapiBlock } from '../blocks/eapi-block';
 import { buildOrderBlock } from '../blocks/order-block';
 import { buildPaypalBlock } from '../blocks/paypal-block';
@@ -37,20 +37,20 @@ test.describe('Daily EAPI Search', () => {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
     const results: any [][]= [];
-    results.push([{'EAPI Report':{ type: 'separator' }}]);  
-    const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
-    results.push(eapiBlock);
+    // results.push([{'EAPI Report':{ type: 'separator' }}]);  
+    // const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
+    // results.push(eapiBlock);
     
-    results.push([{'Order Report':{ type: 'separator' }}]);  
-    const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
-    results.push(...orderBlock);
+    // results.push([{'Order Report':{ type: 'separator' }}]);  
+    // const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
+    // results.push(...orderBlock);
 
-    results.push([{'Paypal Report':{ type: 'separator' }}]);  
-    const paypalBlock = await buildPaypalBlock(page, fromTime, toTime, prefix);
-    results.push(...paypalBlock);
+    // results.push([{'Paypal Report':{ type: 'separator' }}]);  
+    // const paypalBlock = await buildPaypalBlock(page, fromTime, toTime, prefix);
+    // results.push(...paypalBlock);
 
-    // const failedPaymentBlock = await buildFailedPaymentBlock(page, fromTime, toTime, prefix);
-    // results.push(...failedPaymentBlock)
+    const failedPaymentBlock = await buildPaymentBlock(page, fromTime, toTime, prefix);
+    results.push(...failedPaymentBlock)
 
 
 

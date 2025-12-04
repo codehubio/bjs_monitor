@@ -1,7 +1,7 @@
 import {  Page } from '@playwright/test';
 import { GraylogHelper } from '../helper';
 import { config } from '../../config';
-import queries from '../searchText/daily-eapi';
+import queries from '../searchText/paypal';
 import * as path from 'path';
 import { GraylogApiService } from '../api.service';
 import {  buildS3BaseUrl } from '../../utils/utils';
@@ -36,7 +36,7 @@ export async function buildPaypalBlock(page: Page, fromTime: string, toTime: str
     const resultDir = path.resolve(process.cwd(), 'src','graylog','result', pathElements[0], pathElements[1]);
     const results: any [][]= [];
 
-    const paypalQuery = queries[8] as any;
+    const paypalQuery = queries[0] as any;
     await graylogHelper.loginAndVisitSearchView(paypalQuery.view);
     await graylogHelper.selectTimeRange(fromTime, toTime);
 
