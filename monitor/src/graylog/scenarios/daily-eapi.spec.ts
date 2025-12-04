@@ -37,11 +37,6 @@ function calculateMinOrderNotification(
       const percentile10Success = sortedSuccesses[percentile10Index];
       
       // Check if current values are in top 10% lowest
-      if (totalOrders <= percentile10Total) {
-        shouldNotify = true;
-        reasons.push(`Total orders (${totalOrders}) is in top 10% lowest (threshold: ${percentile10Total})`);
-      }
-      
       if (successOrders <= percentile10Success) {
         shouldNotify = true;
         reasons.push(`Successful orders (${successOrders}) is in top 10% lowest (threshold: ${percentile10Success})`);
@@ -73,14 +68,9 @@ function calculateMinOrderNotification(
     const totalDiff = prevTotal - totalOrders;
     const successDiff = prevSuccess - successOrders;
     
-    if (totalDiff > 200) {
-      shouldNotify = true;
-      reasons.push(`Total orders (${totalOrders}) is ${totalDiff} lower than ${prev.date} (${prevTotal}), difference > 200`);
-    }
-    
     if (successDiff > 200) {
       shouldNotify = true;
-      reasons.push(`Successful orders (${successOrders}) is ${successDiff} lower than ${prev.date} (${prevSuccess}), difference > 200`);
+      reasons.push(`Successful orders (${successOrders}) is ${successDiff} lower than ${prev.date} (${prevSuccess})`);
     }
   });
 
@@ -500,6 +490,7 @@ test.describe('Daily EAPI Search', () => {
     
     const paypalQuery = queries[singleQueriesCount + 2] as any;
     await graylogHelper.loginAndVisitSearchView(paypalQuery.view);
+    await graylogHelper.selectTimeRange(fromTime, toTime);
 
 
 
@@ -555,8 +546,8 @@ test.describe('Daily EAPI Search', () => {
     results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenamePaypal) }}]);
     results.push(groupedDataPaypal);
 
-    const failedPaymentBlock = await buildFailedPaymentBlock(page, fromTime, toTime, prefix);
-    results.push(...failedPaymentBlock)
+    // const failedPaymentBlock = await buildFailedPaymentBlock(page, fromTime, toTime, prefix);
+    // results.push(...failedPaymentBlock)
 
 
 
