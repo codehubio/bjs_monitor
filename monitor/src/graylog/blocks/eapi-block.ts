@@ -155,7 +155,6 @@ export async function buildEapiBlock(page: Page, fromTime: string, toTime: strin
       });
       
       totalCount = apiResult.groupedData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
-      console.log(`API Query Grouped Results:`, groupedData);
       console.log(`API Query Total Count: ${totalCount}`);
       console.log(`4xx Errors: ${count4xx}, 5xx Errors: ${count5xx}, Other: ${countOther}`);
     } catch (error) {

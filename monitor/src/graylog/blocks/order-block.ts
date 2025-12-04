@@ -240,7 +240,6 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
       return transformedItem;
     });
     totalCount = apiResult.groupedData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
-    console.log(`API Query Grouped Results:`, groupedData);
     console.log(`API Query Total Count: ${totalCount}`);
   } catch (error) {
     console.log(error);
@@ -435,7 +434,6 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
       return transformedItem;
     });
     totalCount = apiResult.groupedData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
-    console.log(`API Query Grouped Results:`, groupedDataFailedOrder);
     console.log(`API Query Total Count: ${totalCountFailedOrder}`);
   } catch (error) {
     console.log(error);

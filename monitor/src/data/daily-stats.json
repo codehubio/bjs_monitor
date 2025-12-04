@@ -61,6 +61,30 @@
         "success": 2935,
         "failed": 393
       }
+    },
+    "eapi": {
+      "total": 149519,
+      "errors4xx": 15,
+      "errors5xx": 0,
+      "errorsOther": 4,
+      "httpErrors": [
+        {
+          "status": "401",
+          "count": 10
+        },
+        {
+          "status": "404",
+          "count": 5
+        },
+        {
+          "status": "0",
+          "count": 3
+        },
+        {
+          "status": "200",
+          "count": 1
+        }
+      ]
     }
   }
 ]
