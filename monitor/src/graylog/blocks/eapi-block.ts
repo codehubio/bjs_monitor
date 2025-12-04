@@ -82,11 +82,11 @@ export async function buildEapiBlock(page: Page, fromTime: string, toTime: strin
       console.log(`Screenshot saved: ${screenshotPath}`);
 
       // Store result with field types (screenshot will be updated with S3 URL after upload)
-      singleQueryResults.push({
+      singleQueryResults.push([{
         name: { type: 'text', value: query.name },
         total: { type: 'text', value: apiCount },
         screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }
-      });
+      }]);
     }
     return singleQueryResults
 }

@@ -29,7 +29,54 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
 
   // Array to store results (before S3 upload, screenshots are just filenames)
   const results: any[][] = [];
-
+  let baseCount: number = 0;
+  // Step 4: Loop through each query and execute the same task
+  const singleCountPaymentQueries = [queries[0], queries[1]] as any;
+  for (let i = 0; i< singleCountPaymentQueries.length; ++i) {
+    const query =singleCountPaymentQueries[i]
+    console.log('Query Name:', query.name);
+    console.log('Query:', query.query);
+    await graylogHelper.loginAndVisitSearchView(query.view);
+    // Step 4: Click on the timerange type target div
+    await graylogHelper.selectTimeRange(fromTime, toTime);
+    
+    // Navigate to query-specific view if provided and different from current view
+    console.log(`Navigating to query-specific view: ${query.view}`);
+    await graylogHelper.loginAndVisitSearchView(query.view);
+    await page.waitForLoadState('domcontentloaded');
+    await graylogHelper.selectTimeRange(fromTime, toTime);
+  
+    // Execute query using Graylog API client and wait for results (grouped by 3 columns)
+    let apiCount: number | null = null;
+    try {
+      console.log(`\nExecuting grouped query via API (3 columns)...`);
+      const streamIds = config.graylogEapiStream ? [config.graylogEapiStream] : undefined;
+      const apiResult = await graylogApi.executeCountQueryByStreamIdsAndWait(
+        query.query,
+        fromTimeISO,
+        toTimeISO,
+        streamIds
+      );
+      apiCount = apiResult.count;
+    } catch (error) {
+      console.error(`Error executing query via API:`, error);
+      // Continue with UI-based execution even if API fails
+    }
+  
+    // Enter the search query and submit
+    // The function will automatically submit (press Enter) and wait for the API response
+    await graylogHelper.enterQueryText(query.query);
+  
+    // Take a screenshot for this query result (one screenshot for all grouped data)
+    const screenshotFilename = `query-payment-${++baseCount}-result.png`;
+    const screenshotPath = path.join(resultDir, screenshotFilename);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+  
+    // Store result with field types (screenshot will be updated with S3 URL after upload)
+    // Store groupedData as JSON object (will be properly serialized when writing to JSON file)
+    results.push([{name: { type: 'text', value: query.name },
+      total: { type: 'text', value: apiCount },screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }}]);
+  }
   // Step 4: Loop through each query and execute the same task
   const groupPaymentQueries = [queries[2], queries[3]] as any;
   for (let i = 0; i< groupPaymentQueries.length; ++i) {
@@ -87,7 +134,7 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
     await graylogHelper.enterQueryText(query.query);
   
     // Take a screenshot for this query result (one screenshot for all grouped data)
-    const screenshotFilename = `query-payment-${i + 1}-result.png`;
+    const screenshotFilename = `query-payment-${++baseCount}-result.png`;
     const screenshotPath = path.join(resultDir, screenshotFilename);
     await page.screenshot({ path: screenshotPath, fullPage: true });
   

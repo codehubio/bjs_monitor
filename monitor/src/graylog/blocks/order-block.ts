@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { GraylogHelper } from '../helper';
 import { config } from '../../config';
-import queries from '../searchText/central';
+import queries from '../searchText/order';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GraylogApiService } from '../api.service';
