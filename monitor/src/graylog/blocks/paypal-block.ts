@@ -66,7 +66,6 @@ export async function buildPaypalBlock(page: Page, fromTime: string, toTime: str
         return transformedItem;
       });
       totalCountPaypal = apiResult.groupedData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
-      console.log(`API Query Grouped  Results:`, groupedDataPaypal);
       console.log(`API Query Total Count: ${totalCountPaypal}`);
     } catch (error) {
       console.log(error);

@@ -1,5 +1,39 @@
 [
   {
+    "date": "2025-11-30",
+    "eapi": {
+      "total": 142508,
+      "errors4xx": 44,
+      "errors5xx": 282,
+      "errorsOther": 9,
+      "httpErrors": [
+        {
+          "status": "524",
+          "count": 282
+        },
+        {
+          "status": "401",
+          "count": 36
+        },
+        {
+          "status": "0",
+          "count": 8
+        },
+        {
+          "status": "404",
+          "count": 8
+        },
+        {
+          "status": "200",
+          "count": 1
+        }
+      ]
+    },
+    "openCheck": {
+      "count": 101
+    }
+  },
+  {
     "date": "2025-12-01",
     "order": {
       "success": 2532,
