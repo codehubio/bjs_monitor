@@ -71,7 +71,6 @@ export async function buildPaypalBlock(page: Page, fromTime: string, toTime: str
     } catch (error) {
       console.log(error);
     }
-    console.log(`groupedData:`, JSON.stringify(groupedDataPaypal, null, 2));
       // Enter the search query and submit
       // The function will automatically submit (press Enter) and wait for the API response
     await graylogHelper.enterQueryText(paypalQuery.query);

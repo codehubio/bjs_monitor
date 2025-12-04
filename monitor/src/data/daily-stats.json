@@ -1,5 +1,49 @@
 [
   {
+    "date": "2025-12-01",
+    "order": {
+      "success": 2532,
+      "failed": 8
+    },
+    "openCheck": {
+      "count": 56
+    },
+    "payment": {
+      "mobile": {
+        "success": 36,
+        "failed": 2
+      },
+      "desktop": {
+        "success": 2466,
+        "failed": 345
+      }
+    },
+    "eapi": {
+      "total": 138615,
+      "errors4xx": 30,
+      "errors5xx": 0,
+      "errorsOther": 3,
+      "httpErrors": [
+        {
+          "status": "401",
+          "count": 29
+        },
+        {
+          "status": "0",
+          "count": 2
+        },
+        {
+          "status": "200",
+          "count": 1
+        },
+        {
+          "status": "400",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
     "date": "2025-12-02",
     "order": {
       "success": 2958,
