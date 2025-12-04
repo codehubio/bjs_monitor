@@ -35,7 +35,7 @@ export async function buildEapiBlock(page: Page, fromTime: string, toTime: strin
     const singleQueryResults: any []= [];
 
     // Step 4: Loop through each query and execute the same task
-    for (let i = 0; i < queries.length; i++) {
+    for (let i = 0; i < 5; i++) {
       const query = queries[i] as any;
       console.log(`\n=== Processing Query ${i + 1}/${queries.length} ===`);
       console.log('Query Name:', query.name);
@@ -77,6 +77,45 @@ export async function buildEapiBlock(page: Page, fromTime: string, toTime: strin
         screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }
       }]);
     }
+    const failedEapiQuery = queries[5] as any;
+    await graylogHelper.loginAndVisitSearchView(failedEapiQuery.view);
+    await graylogHelper.selectTimeRange(fromTime, toTime);
+    await graylogHelper.enterQueryText(failedEapiQuery.query);
+    const screenshotFilename = `query-eapi-100-failed-result.png`;
+    const screenshotPath = path.join(resultDir, screenshotFilename);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    console.log(`Screenshot saved: ${screenshotPath}`);
+    let groupedData: any[] = [];
+    let totalCount: number = 0;
+    try {
+      const apiResult = await graylogApi.executeCountAndGroupBy1ColumnQueryByStreamIdsAndWait(
+        failedEapiQuery.query,
+        fromTimeISO,
+        toTimeISO,
+        failedEapiQuery.groupBy[0],
+        [config.graylogEapiStream]
+      );
+      // Transform groupedData to structured format with type and value
+      groupedData = apiResult.groupedData.map((item: any) => {
+        const transformedItem: any = {};
+        // Transform each field in the item to {type, value} format
+        for (const key in item) {
+          if (item.hasOwnProperty(key)) {
+            transformedItem[key] = {
+              type: 'text',
+              value: item[key]
+            };
+          }
+        }
+        return transformedItem;
+      });
+      totalCount = apiResult.groupedData.reduce((sum: number, item: any) => sum + (item.count || 0), 0);
+      console.log(`API Query Grouped Results:`, groupedData);
+      console.log(`API Query Total Count: ${totalCount}`);
+    } catch (error) {
+      console.log(error);
+    }
+    singleQueryResults.push(groupedData);
     return singleQueryResults
 }
 
