@@ -26,39 +26,26 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
   const fromTimeISO = parseUTCTime(fromTime);
   const toTimeISO = parseUTCTime(toTime);
   
-  // Check if search view ID is configured
-  // Note: This config property may need to be added to config.ts
-  const searchViewId = (config as any).graylogFailedPaymentSearchView || config.graylogSubmitOrderSearchView;
-  if (!searchViewId) {
-    throw new Error('GRAYLOG_FAILED_PAYMENT_SEARCH_VIEW or GRAYLOG_SUBMIT_ORDER_SEARCH_VIEW environment variable is not set');
-  }
-
-  // Step 1: Login if needed and visit the search view page
-  await graylogHelper.loginAndVisitSearchView(searchViewId);
-  // Step 4: Click on the timerange type target div
-  await graylogHelper.selectTimeRange(fromTime, toTime);
 
   // Array to store results (before S3 upload, screenshots are just filenames)
   const results: any[][] = [];
 
   // Step 4: Loop through each query and execute the same task
-  let currentViewId = searchViewId;
-  for (let i = 0; i < queries.length; i++) {
-    const query = queries[i] as any;
-    console.log(`\n=== Processing Query ${i + 1}/${queries.length} ===`);
+  const groupPaymentQueries = [queries[2], queries[3]] as any;
+  for (let i = 0; i< groupPaymentQueries.length; ++i) {
+    const query =groupPaymentQueries[i]
     console.log('Query Name:', query.name);
     console.log('Query:', query.query);
-
+    await graylogHelper.loginAndVisitSearchView(query.view);
+    // Step 4: Click on the timerange type target div
+    await graylogHelper.selectTimeRange(fromTime, toTime);
+    
     // Navigate to query-specific view if provided and different from current view
-    const queryView = query.view || searchViewId;
-    if (query.view && query.view !== currentViewId) {
-      console.log(`Navigating to query-specific view: ${queryView}`);
-      await graylogHelper.loginAndVisitSearchView(queryView);
-      await page.waitForLoadState('domcontentloaded');
-      await graylogHelper.selectTimeRange(fromTime, toTime);
-      currentViewId = queryView;
-    }
-
+    console.log(`Navigating to query-specific view: ${query.view}`);
+    await graylogHelper.loginAndVisitSearchView(query.view);
+    await page.waitForLoadState('domcontentloaded');
+    await graylogHelper.selectTimeRange(fromTime, toTime);
+  
     // Execute query using Graylog API client and wait for results (grouped by 3 columns)
     let groupedData: any[] = [];
     let totalCount: number = 0;
@@ -94,16 +81,16 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
       console.error(`Error executing query via API:`, error);
       // Continue with UI-based execution even if API fails
     }
-
+  
     // Enter the search query and submit
     // The function will automatically submit (press Enter) and wait for the API response
     await graylogHelper.enterQueryText(query.query);
-
+  
     // Take a screenshot for this query result (one screenshot for all grouped data)
-    const screenshotFilename = `query-${i + 1}-result.png`;
+    const screenshotFilename = `query-payment-${i + 1}-result.png`;
     const screenshotPath = path.join(resultDir, screenshotFilename);
     await page.screenshot({ path: screenshotPath, fullPage: true });
-
+  
     // Store result with field types (screenshot will be updated with S3 URL after upload)
     // Store groupedData as JSON object (will be properly serialized when writing to JSON file)
     results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }}]);

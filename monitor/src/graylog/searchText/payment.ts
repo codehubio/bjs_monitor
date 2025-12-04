@@ -1,8 +1,21 @@
 import { config } from "../../config";
 
 const queries= [{
-  "name": "Failure ProcessPaymentP3",
-  "query": 'eapi_direction:Ended AND (eapi_method:(ProcessPaymentP3 OR ApplePayCloseCheckP3 OR PayPalVerifyCloseCheckP4 OR ProcessPayPalFuturePaymentP4) AND NOT ("Thank you for your payment" OR "Payment processed successfully")) AND ("Credit Card is declined, please correct your payment information and try again." OR "Payment cannot be processed at this time. Please try again later." OR "We apologize, there is an error processing your payment. Please correct your payment information and try again." OR "We apologize, it looks like we are experiencing difficulties with your payment methods. Please contact restaurant for help.")',
+  "name": "Sucess Mobile Payment",
+  "query": 'eapi_method:(PayPalVerifyCloseCheckP4 OR ProcessPaymentP3 OR ProcessPayPalFuturePaymentP4 OR ApplePayCloseCheckP3) AND ("payPalVerifyCloseCheckMobilePay" OR "applePayCloseCheckMobilePay" OR "processPaymentP3MobilePay" OR "payPalFuturePaymentMobilePay") AND NOT eapi_direction:Started AND ("Payment processed successfully" OR "Thank you for your payment")',
+  "view": config.graylogPaymentSearchView,
+}, {
+  "name": "Success Payment",
+  "query": 'eapi_method:(PayPalVerifyCloseCheckP4 OR ProcessPaymentP3 OR ProcessPayPalFuturePaymentP4 OR ApplePayCloseCheckP3) AND (NOT ("payPalVerifyCloseCheckMobilePay" OR "applePayCloseCheckMobilePay" OR "processPaymentP3MobilePay" OR "payPalFuturePaymentMobilePay")) AND NOT eapi_direction:Started AND ("Payment processed successfully" OR "Thank you for your payment")',
+  "view": config.graylogPaymentSearchView,
+}, {
+  "name": "Failure Mobile Payment",
+  "query": 'eapi_method:(PayPalVerifyCloseCheckP4 OR ProcessPaymentP3 OR ProcessPayPalFuturePaymentP4 OR ApplePayCloseCheckP3) AND ("payPalVerifyCloseCheckMobilePay" OR "applePayCloseCheckMobilePay" OR "processPaymentP3MobilePay" OR "payPalFuturePaymentMobilePay") AND NOT eapi_direction:Started AND NOT ("Payment processed successfully" OR "Thank you for your payment")',
+  "view": config.graylogPaymentSearchView,
+  "groupBy": ["eapi_method", "eapi_err_desc", "eapi_result_msg"]
+}, {
+  "name": "Failure Payment",
+  "query": 'eapi_method:(PayPalVerifyCloseCheckP4 OR ProcessPaymentP3 OR ProcessPayPalFuturePaymentP4 OR ApplePayCloseCheckP3) AND (NOT ("payPalVerifyCloseCheckMobilePay" OR "applePayCloseCheckMobilePay" OR "processPaymentP3MobilePay" OR "payPalFuturePaymentMobilePay")) AND NOT eapi_direction:Started AND NOT ("Payment processed successfully" OR "Thank you for your payment")',
   "view": config.graylogPaymentSearchView,
   "groupBy": ["eapi_method", "eapi_err_desc", "eapi_result_msg"]
 }];

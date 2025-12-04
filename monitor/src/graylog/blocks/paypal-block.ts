@@ -77,7 +77,7 @@ export async function buildPaypalBlock(page: Page, fromTime: string, toTime: str
     await graylogHelper.enterQueryText(paypalQuery.query);
 
     // Take a screenshot for this query result (one screenshot for all grouped data)
-    const screenshotFilenamePaypal = `query-${8}-result.png`;
+    const screenshotFilenamePaypal = `query-paypal-1-result.png`;
     const screenshotPathPaypal = path.join(resultDir, screenshotFilenamePaypal);
     await page.screenshot({ path: screenshotPathPaypal, fullPage: true });
     console.log(`Screenshot saved: ${screenshotPathPaypal}`);

@@ -76,7 +76,7 @@ export async function buildEapiBlock(page: Page, fromTime: string, toTime: strin
       await graylogHelper.enterQueryText(query.query);
 
       // Take a screenshot for this query result
-      const screenshotFilename = `query-${i + 1}-result.png`;
+      const screenshotFilename = `query-eapi-${i + 1}-result.png`;
       const screenshotPath = path.join(resultDir, screenshotFilename);
       await page.screenshot({ path: screenshotPath, fullPage: true });
       console.log(`Screenshot saved: ${screenshotPath}`);

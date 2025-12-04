@@ -336,7 +336,7 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   await graylogHelper.enterQueryText(submitOrderQuery.query);
 
   // Take a screenshot for this query result (one screenshot for all grouped data)
-  const screenshotFilenameSubmitOrder = `query-${7}-result.png`;
+  const screenshotFilenameSubmitOrder = `query-order-1-result.png`;
   const screenshotPathSubmitOrder = path.join(resultDir, screenshotFilenameSubmitOrder);
   await page.screenshot({ path: screenshotPathSubmitOrder, fullPage: true });
   console.log(`Screenshot saved: ${screenshotPathSubmitOrder}`);
@@ -408,7 +408,7 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   await graylogHelper.enterQueryText(failedOrderQuery.query);
 
   // Take a screenshot for this query result (one screenshot for all grouped data)
-  const screenshotFilenameFailedOrder = `query-${7}-result.png`;
+  const screenshotFilenameFailedOrder = `query-order-2-result.png`;
   const screenshotPathFailedOrder = path.join(resultDir, screenshotFilenameFailedOrder);
   await page.screenshot({ path: screenshotPathFailedOrder, fullPage: true });
   console.log(`Screenshot saved: ${screenshotPathFailedOrder}`);
