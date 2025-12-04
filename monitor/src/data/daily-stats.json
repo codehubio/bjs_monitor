@@ -35,6 +35,16 @@
     "order": {
       "success": 2347,
       "failed": 10
+    },
+    "payment": {
+      "mobile": {
+        "success": 61,
+        "failed": 4
+      },
+      "desktop": {
+        "success": 2270,
+        "failed": 340
+      }
     }
   },
   {
