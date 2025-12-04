@@ -81,6 +81,8 @@ export async function uploadFolderToS3(folderPath: string, prefix?: string): Pro
       Bucket: config.s3Bucket,
       Key: s3Key,
       Body: fileContent,
+      ContentType: 'image/png',
+      ContentDisposition: 'inline',
     });
 
     try {
