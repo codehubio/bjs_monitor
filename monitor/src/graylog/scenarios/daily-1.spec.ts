@@ -5,16 +5,13 @@ import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
 import { buildDateTimeFolder } from '../../utils/utils';
-import { buildPaymentBlock } from '../blocks/payment.block';
 import { buildEapiBlock } from '../blocks/eapi-block';
 import { buildOrderBlock } from '../blocks/order-block';
-import { buildPaypalBlock } from '../blocks/paypal-block';
-import { buildOpenCheckBlock } from '../blocks/open-check.block';
 
+const FOLDER_PREFIX = 'daily-1';
 
-
-test.describe('Daily EAPI Search', () => {
-  test('should login, report daily eapi, wait for results', async ({ page }) => {
+test.describe('Daily 1 report', () => {
+  test('should login, report daily 1, wait for results', async ({ page }) => {
     // Check if time range is configured
     if (!config.graylogQueryFromTime || !config.graylogQueryToTime) {
       throw new Error('GRAYLOG_QUERY_FROM_TIME and GRAYLOG_QUERY_TO_TIME environment variables must be set');
@@ -23,17 +20,13 @@ test.describe('Daily EAPI Search', () => {
     const fromTime = config.graylogQueryFromTime;
     const toTime = config.graylogQueryToTime;
 
-    // Check if search view ID is configured
-    if (!config.graylogDailyEapiSearchView) {
-      throw new Error('GRAYLOG_DAILY_EAPI_SEARCH_VIEW environment variable is not set');
-    }
 
     // Generate datetime string in format dd-mm-yy-hh-MM
     const datetimeFolder = buildDateTimeFolder();
-    const prefix =`daily-eapi/${datetimeFolder}`
+    const prefix =`${FOLDER_PREFIX}/${datetimeFolder}`
 
     // Create results directory with datetime folder
-    const resultsDir = path.resolve(process.cwd(), 'src','graylog','result', 'daily-eapi', datetimeFolder);
+    const resultsDir = path.resolve(process.cwd(), 'src','graylog','result', FOLDER_PREFIX, datetimeFolder);
     if (!fs.existsSync(resultsDir)) {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
@@ -46,18 +39,6 @@ test.describe('Daily EAPI Search', () => {
     const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
     results.push(...orderBlock);
 
-    results.push([{'Paypal Report':{ type: 'separator' }}]);  
-    const paypalBlock = await buildPaypalBlock(page, fromTime, toTime, prefix);
-    results.push(...paypalBlock);
-
-    // results.push([{'Open Check Report':{ type: 'separator' }}]);  
-    // const openCheckBlock = await buildOpenCheckBlock(page, fromTime, toTime, prefix);
-    // results.push(...openCheckBlock);
-    
-    // results.push([{'Payment Report':{ type: 'separator' }}]);  
-    // const failedPaymentBlock = await buildPaymentBlock(page, fromTime, toTime, prefix);
-    // results.push(...failedPaymentBlock)
-
 
 
     // Step 5: Upload results folder to S3 with custom prefix
@@ -65,7 +46,7 @@ test.describe('Daily EAPI Search', () => {
     try {
       console.log(`\nUploading results folder to S3...`);
       const s3Prefix = config.s3Prefix || '';
-      await uploadFolderToS3(resultsDir, `${s3Prefix}/daily-eapi`);
+      await uploadFolderToS3(resultsDir, `${s3Prefix}/${FOLDER_PREFIX}`);
       console.log('Upload to S3 completed successfully');
     } catch (error) {
       console.error('Failed to upload to S3:', error);
@@ -89,7 +70,7 @@ test.describe('Daily EAPI Search', () => {
           urls.push(s3Path);
         }
 
-        const title = `Report status - ${fromTime} to ${toTime}`;
+        const title = `Report status - Daily 1 - ${fromTime} to ${toTime}`;
         
         // Pass results as array of arrays - wrap single array in another array
         // Headers will be automatically extracted from field names

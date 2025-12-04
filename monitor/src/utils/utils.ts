@@ -50,8 +50,8 @@ export function buildDateTimeFolder() {
   const day = String(now.getDate()).padStart(2, '0');
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const year = String(now.getFullYear()).slice(-2);
-  const hour = String(now.getHours()).padStart(2, '0');
-  const minute = String(now.getMinutes()).padStart(2, '0');
-  const datetimeFolder = `${year}-${month}-${day}-${hour}-${minute}`;
+  // const hour = String(now.getHours()).padStart(2, '0');
+  // const minute = String(now.getMinutes()).padStart(2, '0');
+  const datetimeFolder = `${year}-${month}-${day}`;
   return datetimeFolder;
 }
