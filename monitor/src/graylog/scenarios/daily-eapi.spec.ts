@@ -9,6 +9,7 @@ import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
 import { GraylogApiService } from '../api.service';
 import { buildDateTimeFolder, buildS3BaseUrl } from '../../utils/utils';
 import { buildFailedPaymentBlock } from '../blocks/failed-payment.block';
+import { buildEapiBlock } from '../blocks/eapi-block';
 
 
 function calculateMinOrderNotification(
@@ -221,63 +222,13 @@ test.describe('Daily EAPI Search', () => {
 
     // Array to store results (before S3 upload, screenshots are just filenames)
     const results: any [][]= [];
-    const singleQueryResults: any []= [];
-
-    // Step 4: Loop through each query and execute the same task
-    let currentViewId = config.graylogDailyEapiSearchView;
-    const singleQueriesCount = 6;
-    for (let i = 0; i < singleQueriesCount; i++) {
-      const query = queries[i] as any;
-      console.log(`\n=== Processing Query ${i + 1}/${queries.length} ===`);
-      console.log('Query Name:', query.name);
-      console.log('Query:', query.query);
-
-      // Navigate to query-specific view if provided and different from current view
-      const queryView = query.view || config.graylogDailyEapiSearchView;
-      if (query.view && query.view !== currentViewId) {
-        console.log(`Navigating to query-specific view: ${queryView}`);
-        await graylogHelper.loginAndVisitSearchView(queryView);
-        await graylogHelper.selectTimeRange(fromTime, toTime);
-        currentViewId = queryView;
-      }
-
-      // Execute query using Graylog API client and wait for results
-      let apiCount: number | null = null;
-      try {
-        console.log(`\nExecuting query via API...`);
-        const streamIds = config.graylogEapiStream ? [config.graylogEapiStream] : undefined;
-        const apiResult = await graylogApi.executeCountQueryByStreamIdsAndWait(query.query, fromTimeISO, toTimeISO, streamIds);
-        apiCount = apiResult.count;
-        console.log(`API Query Count: ${apiCount ?? 'N/A'}`);
-      } catch (error) {
-        console.error(`Error executing query via API:`, error);
-        // Continue with UI-based execution even if API fails
-      }
-
-      // Enter the search query and submit
-      // The function will automatically submit (press Enter) and wait for the API response
-      await graylogHelper.enterQueryText(query.query);
-
-      // Take a screenshot for this query result
-      const screenshotFilename = `query-${i + 1}-result.png`;
-      const screenshotPath = path.join(resultsDir, screenshotFilename);
-      await page.screenshot({ path: screenshotPath, fullPage: true });
-      console.log(`Screenshot saved: ${screenshotPath}`);
-
-      // Store result with field types (screenshot will be updated with S3 URL after upload)
-      singleQueryResults.push({
-        name: { type: 'text', value: query.name },
-        total: { type: 'text', value: apiCount },
-        screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }
-      });
-    }
+    const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
     results.push([{'EAPI Report':{ type: 'separator' }}]);  
-    results.push(singleQueryResults);
+    results.push(eapiBlock);
 
-    results.push([{'ORDER Report':{ type: 'separator' }}]);  
     // Step 2: Verify we're on the search view page (not login page)
     
-    const submitOrderQuery = queries[singleQueriesCount] as any;
+    const submitOrderQuery = queries[6] as any;
     await graylogHelper.loginAndVisitSearchView(submitOrderQuery.view);
     await graylogHelper.selectTimeRange(fromTime, toTime);
     let minOrderNotification: { notify: boolean; reason: string } | null = null;
@@ -404,7 +355,7 @@ test.describe('Daily EAPI Search', () => {
     await graylogHelper.enterQueryText(submitOrderQuery.query);
 
     // Take a screenshot for this query result (one screenshot for all grouped data)
-    const screenshotFilenameSubmitOrder = `query-${singleQueriesCount + 1}-result.png`;
+    const screenshotFilenameSubmitOrder = `query-${7}-result.png`;
     const screenshotPathSubmitOrder = path.join(resultsDir, screenshotFilenameSubmitOrder);
     await page.screenshot({ path: screenshotPathSubmitOrder, fullPage: true });
     console.log(`Screenshot saved: ${screenshotPathSubmitOrder}`);
@@ -434,7 +385,7 @@ test.describe('Daily EAPI Search', () => {
     results.push(groupedData);
    
     
-    const failedOrderQuery = queries[singleQueriesCount + 1] as any;
+    const failedOrderQuery = queries[7] as any;
     await graylogHelper.loginAndVisitSearchView(failedOrderQuery.view);
     await graylogHelper.selectTimeRange(fromTime, toTime);
     let groupedDataFailedOrder: any[] = [];
@@ -476,7 +427,7 @@ test.describe('Daily EAPI Search', () => {
     await graylogHelper.enterQueryText(failedOrderQuery.query);
 
     // Take a screenshot for this query result (one screenshot for all grouped data)
-    const screenshotFilenameFailedOrder = `query-${singleQueriesCount + 1}-result.png`;
+    const screenshotFilenameFailedOrder = `query-${7}-result.png`;
     const screenshotPathFailedOrder = path.join(resultsDir, screenshotFilenameFailedOrder);
     await page.screenshot({ path: screenshotPathFailedOrder, fullPage: true });
     console.log(`Screenshot saved: ${screenshotPathFailedOrder}`);
@@ -488,7 +439,7 @@ test.describe('Daily EAPI Search', () => {
     results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenameFailedOrder) }}]);
     results.push(groupedDataFailedOrder);
     
-    const paypalQuery = queries[singleQueriesCount + 2] as any;
+    const paypalQuery = queries[8] as any;
     await graylogHelper.loginAndVisitSearchView(paypalQuery.view);
     await graylogHelper.selectTimeRange(fromTime, toTime);
 
@@ -534,7 +485,7 @@ test.describe('Daily EAPI Search', () => {
     await graylogHelper.enterQueryText(paypalQuery.query);
 
     // Take a screenshot for this query result (one screenshot for all grouped data)
-    const screenshotFilenamePaypal = `query-${singleQueriesCount + 2}-result.png`;
+    const screenshotFilenamePaypal = `query-${8}-result.png`;
     const screenshotPathPaypal = path.join(resultsDir, screenshotFilenamePaypal);
     await page.screenshot({ path: screenshotPathPaypal, fullPage: true });
     console.log(`Screenshot saved: ${screenshotPathPaypal}`);

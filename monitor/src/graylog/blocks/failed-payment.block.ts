@@ -39,11 +39,6 @@ export async function buildFailedPaymentBlock(page: Page, fromTime: string, toTi
   // Step 4: Click on the timerange type target div
   await graylogHelper.selectTimeRange(fromTime, toTime);
 
-  // Generate datetime string in format dd-mm-yy-hh-MM
-  const datetimeFolder = buildDateTimeFolder();
-  const folderPrefix='daily-eapi'
-  // Create results directory with datetime folder
-
   // Array to store results (before S3 upload, screenshots are just filenames)
   const results: any[][] = [];
 
