@@ -1,5 +1,41 @@
 [
   {
+    "date": "2025-11-29",
+    "eapi": {
+      "total": 148046,
+      "errors4xx": 63,
+      "errors5xx": 0,
+      "errorsOther": 2,
+      "httpErrors": [
+        {
+          "status": "401",
+          "count": 63
+        },
+        {
+          "status": "0",
+          "count": 2
+        }
+      ]
+    },
+    "order": {
+      "success": 2425,
+      "failed": 1
+    },
+    "openCheck": {
+      "count": 107
+    },
+    "payment": {
+      "mobile": {
+        "success": 71,
+        "failed": 8
+      },
+      "desktop": {
+        "success": 2352,
+        "failed": 287
+      }
+    }
+  },
+  {
     "date": "2025-11-30",
     "eapi": {
       "total": 142508,
@@ -133,6 +169,62 @@
           "count": 1
         }
       ]
+    }
+  },
+  {
+    "date": "2025-12-03",
+    "eapi": {
+      "total": 147819,
+      "errors4xx": 26,
+      "errors5xx": 620,
+      "errorsOther": 16,
+      "httpErrors": [
+        {
+          "status": "524",
+          "count": 525
+        },
+        {
+          "status": "520",
+          "count": 92
+        },
+        {
+          "status": "401",
+          "count": 22
+        },
+        {
+          "status": "0",
+          "count": 14
+        },
+        {
+          "status": "404",
+          "count": 4
+        },
+        {
+          "status": "502",
+          "count": 3
+        },
+        {
+          "status": "200",
+          "count": 2
+        }
+      ]
+    },
+    "order": {
+      "success": 2538,
+      "failed": 0
+    },
+    "openCheck": {
+      "count": 65
+    },
+    "payment": {
+      "mobile": {
+        "success": 47,
+        "failed": 4
+      },
+      "desktop": {
+        "success": 2445,
+        "failed": 420
+      }
     }
   }
 ]
