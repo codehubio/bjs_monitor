@@ -4,7 +4,7 @@ import queries from '../searchText/payment';
 import * as path from 'path';
 import * as fs from 'fs';
 import { GraylogApiService } from '../api.service';
-import { buildS3BaseUrl } from '../../utils/utils';
+import { buildS3BaseUrl, parseUTCTime } from '../../utils/utils';
 import { Page } from '@playwright/test';
 export async function buildPaymentBlock(page: Page, fromTime: string, toTime: string, prefix: string) {
   const graylogHelper = new GraylogHelper(page);
@@ -18,14 +18,8 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
   const resultDir = path.resolve(process.cwd(), 'src','graylog','result', pathElements[0], pathElements[1]);
   // Convert time strings (UTC format: 'YYYY-MM-DD HH:mm:ss') to ISO format for API calls
   // Parse as UTC explicitly to avoid timezone conversion issues
-  const parseUTCTime = (timeStr: string): string => {
-    // Format: '2025-11-29 08:00:00' -> '2025-11-29T08:00:00.000Z'
-    const dateStr = timeStr.replace(' ', 'T') + '.000Z';
-    return dateStr;
-  };
-  
-  const fromTimeISO = parseUTCTime(fromTime);
-  const toTimeISO = parseUTCTime(toTime);
+  const fromTimeISO = parseUTCTime(fromTime, -8);
+  const toTimeISO = parseUTCTime(toTime, -8);
   
 
   // Array to store results (before S3 upload, screenshots are just filenames)
@@ -59,7 +53,7 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
     // Execute query using Graylog API client and wait for results (grouped by 3 columns)
     let apiCount: number | null = null;
     try {
-      console.log(`\nExecuting grouped query via API (3 columns)...`);
+      console.log(`\nExecuting grouped query via API (4 columns)...`);
       const streamIds = config.graylogEapiStream ? [config.graylogEapiStream] : undefined;
       const apiResult = await graylogApi.executeCountQueryByStreamIdsAndWait(
         query.query,
@@ -96,6 +90,7 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
   // queries[2] = "Failure Mobile Payment" (mobile failed)
   // queries[3] = "Failure Payment" (desktop failed - NOT mobile)
   const groupPaymentQueries = [queries[2], queries[3]] as any;
+  
   for (let i = 0; i< groupPaymentQueries.length; ++i) {
     const query =groupPaymentQueries[i]
     const isMobile = query.name.toLowerCase().includes('mobile');
@@ -117,13 +112,14 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
     try {
       console.log(`\nExecuting grouped query via API (3 columns)...`);
       const streamIds = config.graylogEapiStream ? [config.graylogEapiStream] : undefined;
-      const apiResult = await graylogApi.executeCountAndGroupBy3ColumnQueryByStreamIdsAndWait(
+      const apiResult = await graylogApi.executeCountAndGroupBy4ColumnQueryByStreamIdsAndWait(
         query.query,
         fromTimeISO,
         toTimeISO,
         query.groupBy[0],
         query.groupBy[1],
         query.groupBy[2],
+        query.groupBy[3],
         streamIds
       );
       groupedData = apiResult.groupedData.map((item: any) => {

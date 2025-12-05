@@ -55,3 +55,34 @@ export function buildDateTimeFolder() {
   const datetimeFolder = `${year}-${month}-${day}`;
   return datetimeFolder;
 }
+
+/**
+ * Parse a time string and convert it to UTC ISO format
+ * @param timeStr Time string in format 'YYYY-MM-DD HH:mm:ss'
+ * @param timezoneOffset Optional timezone offset in hours (e.g., -8 for UTC-8, +9 for UTC+9). Defaults to 0 (UTC)
+ * @returns ISO format string (e.g., '2025-11-29T08:00:00.000Z')
+ */
+export function parseUTCTime(timeStr: string, timezoneOffset: number = 0): string {
+  // Format: '2025-11-29 08:00:00' -> '2025-11-29T08:00:00'
+  const dateTimeStr = timeStr.replace(' ', 'T');
+  
+  // If timezone offset is 0 (UTC), simply append '.000Z'
+  if (timezoneOffset === 0) {
+    return `${dateTimeStr}.000Z`;
+  }
+  
+  // Parse the date components
+  const [datePart, timePart] = timeStr.split(' ');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute, second] = timePart.split(':').map(Number);
+  
+  // Create a date object from the input time (treating it as if it were in the specified timezone)
+  // To convert to UTC, we subtract the timezone offset (in hours)
+  // Example: If time is 08:00 in UTC-8, then UTC = 08:00 - (-8) = 16:00
+  // Formula: UTC = localTime - timezoneOffset
+  const offsetMs = timezoneOffset * 60 * 60 * 1000; // Convert hours to milliseconds
+  const localDate = new Date(Date.UTC(year, month - 1, day, hour, minute, second || 0));
+  const utcDate = new Date(localDate.getTime() - offsetMs);
+  
+  return utcDate.toISOString();
+}

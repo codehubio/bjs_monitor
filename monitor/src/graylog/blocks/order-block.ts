@@ -5,7 +5,7 @@ import queries from '../searchText/order';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GraylogApiService } from '../api.service';
-import {  buildS3BaseUrl } from '../../utils/utils';
+import {  buildS3BaseUrl, parseUTCTime } from '../../utils/utils';
 
 
 function calculateMinOrderNotification(
@@ -185,14 +185,8 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
 
   // Convert time strings (UTC format: 'YYYY-MM-DD HH:mm:ss') to ISO format for API calls
   // Parse as UTC explicitly to avoid timezone conversion issues
-  const parseUTCTime = (timeStr: string): string => {
-    // Format: '2025-11-29 08:00:00' -> '2025-11-29T08:00:00.000Z'
-    const dateStr = timeStr.replace(' ', 'T') + '.000Z';
-    return dateStr;
-  };
-  
-  const fromTimeISO = parseUTCTime(fromTime);
-  const toTimeISO = parseUTCTime(toTime);
+  const fromTimeISO = parseUTCTime(fromTime, -8);
+  const toTimeISO = parseUTCTime(toTime, -8);
   // Check if search view ID is configured
   if (!config.graylogDailyEapiSearchView) {
     throw new Error('GRAYLOG_DAILY_EAPI_SEARCH_VIEW environment variable is not set');

@@ -2,7 +2,7 @@
   {
     "date": "2025-11-22",
     "eapi": {
-      "total": 192712,
+      "total": 192716,
       "errors4xx": 23,
       "errors5xx": 97,
       "errorsOther": 3,
@@ -47,7 +47,7 @@
     "payment": {
       "mobile": {
         "success": 104,
-        "failed": 0
+        "failed": 4
       },
       "desktop": {
         "success": 3060,
