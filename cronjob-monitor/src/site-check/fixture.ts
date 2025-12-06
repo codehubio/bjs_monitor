@@ -14,14 +14,16 @@ export function buildFindLocationUrl(): string {
 /**
  * Navigate to find location page and enter search text
  * @param page Playwright page object
- * @param searchingSiteName Optional site name to search for
- * @param locationId Optional location ID to select (from locationParsed.id)
+ * @param searchingSiteName Site name to search for
+ * @param locationId Location ID to select (from locationParsed.id)
+ * @param buttonIndex Button index to try (0-based)
  */
 export async function waitForFindLocationPageAndSearchInput(
   page: Page,
-  searchingSiteName?: string,
-  locationId?: string
-): Promise<void> {
+  searchingSiteName: string,
+  locationId: string,
+  buttonIndex: number = 0
+): Promise<boolean> {
   // Navigate directly to the find location page
   const findLocationUrl = buildFindLocationUrl();
   console.log(`Navigating to find location URL: ${findLocationUrl}`);
@@ -33,74 +35,88 @@ export async function waitForFindLocationPageAndSearchInput(
   await searchInput.waitFor({ state: 'visible', timeout: 30000 });
   console.log('Search input appeared');
 
-  // If site name is provided, type it into the search input
-  if (searchingSiteName) {
-    console.log(`Typing site name "${searchingSiteName}" into search input (human-like)...`);
-    
-    // Focus on the input first
-    await searchInput.focus();
-    
-    // Type character by character with delay to simulate human typing
-    await searchInput.pressSequentially(searchingSiteName, { delay: 500 });
-    console.log(`Typed site name "${searchingSiteName}"`);
+  // Type site name into the search input
+  console.log(`Typing site name "${searchingSiteName}" into search input (human-like)...`);
+  
+  // Focus on the input first
+  await searchInput.focus();
+  
+  // Type character by character with delay to simulate human typing
+  await searchInput.pressSequentially(searchingSiteName, { delay: 500 });
+  console.log(`Typed site name "${searchingSiteName}"`);
 
-    // Trigger input and keyup events to ensure the application detects the input
-    // Some applications rely on these events to trigger search/filter functionality
-    await searchInput.dispatchEvent('input');
-    await searchInput.dispatchEvent('keyup');
-    await searchInput.dispatchEvent('keydown');
-    await searchInput.dispatchEvent('change');
-    
-    // Wait for the location list (ul) to appear
-    // The ul has many li, each li contains a button with text containing the site name
-    console.log('Waiting for location list to appear...');
-    const locationList = page.locator('ul').first();
-    await locationList.waitFor({ state: 'visible', timeout: 30000 });
-    console.log('Location list appeared');
+  // Trigger input and keyup events to ensure the application detects the input
+  // Some applications rely on these events to trigger search/filter functionality
+  await searchInput.dispatchEvent('input');
+  await searchInput.dispatchEvent('keyup');
+  await searchInput.dispatchEvent('keydown');
+  await searchInput.dispatchEvent('change');
+  
+  // Wait for the location list (ul) to appear
+  // The ul has many li, each li contains a button with text containing the site name
+  console.log('Waiting for location list to appear...');
+  const locationList = page.locator('ul').first();
+  await locationList.waitFor({ state: 'visible', timeout: 30000 });
+  console.log('Location list appeared');
 
-    // Find the button within li that contains the site name
-    console.log(`Looking for button containing "${searchingSiteName}" in location list...`);
-    const locationButton = locationList
-      .locator('li')
-      .locator('button')
-      .filter({ hasText: searchingSiteName })
-      .first();
-    
-    await locationButton.waitFor({ state: 'visible', timeout: 30000 });
-    console.log(`Found button containing "${searchingSiteName}"`);
+  // Find all buttons within li that contain the site name
+  console.log(`Looking for buttons containing "${searchingSiteName}" in location list...`);
+  const locationButtons = locationList
+    .locator('li')
+    .locator('button')
+    .filter({ hasText: searchingSiteName });
+  
+  const buttonCount = await locationButtons.count();
+  console.log(`Found ${buttonCount} button(s) containing "${searchingSiteName}"`);
 
-    // Click the button
-    console.log('Clicking the location button...');
-    await locationButton.click();
-    console.log('Clicked the location button');
+  if (buttonCount === 0) {
+    console.warn(`No buttons found containing "${searchingSiteName}"`);
+    return false;
+  }
 
-    // Wait for the first location list to disappear
-    console.log('Waiting for first location list to disappear...');
-    await locationList.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {
-      // If it doesn't disappear, that's okay, continue
-      console.log('First location list did not disappear, continuing...');
-    });
+  if (buttonIndex >= buttonCount) {
+    console.warn(`Button index ${buttonIndex} is out of range (max: ${buttonCount - 1})`);
+    return false;
+  }
 
-    // Wait for a new ul list to appear after clicking the first item
-    // The ul has many li, and one li (or its direct/indirect children) has the site name in the text
-    console.log('Waiting for new location list to appear after clicking first item...');
-    
-    // Wait for a ul that contains an li with the site name
-    const secondLocationList = page
-      .locator('ul')
-      .filter({ has: page.locator('li').filter({ hasText: searchingSiteName }) })
-      .first();
-    
+  // Get the button at the specified index
+  const locationButton = locationButtons.nth(buttonIndex);
+  await locationButton.waitFor({ state: 'visible', timeout: 30000 });
+  console.log(`Found button ${buttonIndex + 1} of ${buttonCount} containing "${searchingSiteName}"`);
+
+  // Click the button
+  console.log(`Clicking location button ${buttonIndex + 1}...`);
+  await locationButton.click();
+  console.log(`Clicked location button ${buttonIndex + 1}`);
+
+  // Wait for the first location list to disappear
+  console.log('Waiting for first location list to disappear...');
+  await locationList.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {
+    // If it doesn't disappear, that's okay, continue
+    console.log('First location list did not disappear, continuing...');
+  });
+
+  // Wait for a new ul list to appear after clicking the first item
+  // The ul has many li, and one li (or its direct/indirect children) has the site name in the text
+  console.log('Waiting for new location list to appear after clicking first item...');
+  
+  // Wait for a ul that contains an li with the site name
+  const secondLocationList = page
+    .locator('ul')
+    .filter({ has: page.locator('li').filter({ hasText: searchingSiteName }) })
+    .first();
+  
+  try {
     await secondLocationList.waitFor({ state: 'visible', timeout: 30000 });
     console.log('New location list appeared after clicking first item');
 
     // Find and select the li with id matching locationParsed.id
-    if (locationId) {
-      console.log(`Looking for li with id="${locationId}" in new location list...`);
-      const secondListItem = secondLocationList
-        .locator(`li[id="${locationId}"]`)
-        .first();
-      
+    console.log(`Looking for li with id="${locationId}" in new location list...`);
+    const secondListItem = secondLocationList
+      .locator(`li[id="${locationId}"]`)
+      .first();
+    
+    try {
       await secondListItem.waitFor({ state: 'visible', timeout: 30000 });
       console.log(`Found li with id="${locationId}" in new location list`);
       
@@ -108,35 +124,65 @@ export async function waitForFindLocationPageAndSearchInput(
       console.log(`Clicking li item with id="${locationId}"...`);
       await secondListItem.click();
       console.log(`Clicked li item with id="${locationId}"`);
+      
+      // Click on the button that has direct/indirect children with text "Choose location"
+      console.log('Looking for button with "Choose location" text...');
+      const chooseLocationButton = page
+        .locator('button')
+        .filter({ hasText: /choose location/i })
+        .first();
+      
+      await chooseLocationButton.waitFor({ state: 'visible', timeout: 30000 });
+      console.log('Found button with "Choose location" text');
+      
+      console.log('Clicking "Choose location" button...');
+      await chooseLocationButton.click();
+      console.log('Clicked "Choose location" button');
+      
+      return true; // Successfully found and clicked
+    } catch (error) {
+      console.warn(`Li with id="${locationId}" not found in new location list`);
+      return false; // Not found, need to try next button
     }
-    
-    // Click on the button that has direct/indirect children with text "Choose location"
-    console.log('Looking for button with "Choose location" text...');
-    const chooseLocationButton = page
-      .locator('button')
-      .filter({ hasText: /choose location/i })
-      .first();
-    
-    await chooseLocationButton.waitFor({ state: 'visible', timeout: 30000 });
-    console.log('Found button with "Choose location" text');
-    
-    console.log('Clicking "Choose location" button...');
-    await chooseLocationButton.click();
-    console.log('Clicked "Choose location" button');
+  } catch (error) {
+    console.warn(`New location list did not appear after clicking button ${buttonIndex + 1}`);
+    return false; // Not found, need to try next button
   }
 }
 
 /**
  * Complete flow: Navigate to find location page and enter search text
+ * Tries each button until secondListItem is found
  * @param page Playwright page object
- * @param searchingSiteName Optional site name to search for in the search input
- * @param locationId Optional location ID to select (from locationParsed.id)
+ * @param searchingSiteName Site name to search for in the search input
+ * @param locationId Location ID to select (from locationParsed.id)
  */
 export async function navigateToFindLocationPage(
   page: Page,
-  searchingSiteName?: string,
-  locationId?: string
+  searchingSiteName: string,
+  locationId: string
 ): Promise<void> {
-  await waitForFindLocationPageAndSearchInput(page, searchingSiteName, locationId);
+  // Try each button until we find the one that leads to the correct secondListItem
+  let buttonIndex = 0;
+  let found = false;
+  
+  while (!found) {
+    console.log(`\nAttempt ${buttonIndex + 1}: Trying button index ${buttonIndex}...`);
+    found = await waitForFindLocationPageAndSearchInput(page, searchingSiteName, locationId, buttonIndex);
+    
+    if (found) {
+      console.log(`Successfully found and selected location with id="${locationId}" using button ${buttonIndex + 1}`);
+      break;
+    }
+    
+    buttonIndex++;
+    console.log(`Button ${buttonIndex} did not lead to correct location, trying next button...`);
+    
+    // Safety check to avoid infinite loop
+    if (buttonIndex > 10) {
+      console.warn(`Tried ${buttonIndex} buttons but could not find location with id="${locationId}", giving up`);
+      throw new Error(`Could not find location with id="${locationId}" after trying ${buttonIndex} buttons`);
+    }
+  }
 }
 
