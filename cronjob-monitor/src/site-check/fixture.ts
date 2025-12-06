@@ -66,10 +66,21 @@ export async function waitForFindLocationPageAndSearchInput(
   // If site name is provided, type it into the search input
   if (searchingSiteName) {
     console.log(`Typing site name "${searchingSiteName}" into search input (human-like)...`);
+    
+    // Focus on the input first
+    await searchInput.focus();
+    
     // Type character by character with delay to simulate human typing
-    await searchInput.pressSequentially(searchingSiteName, { delay: 100 });
+    await searchInput.pressSequentially(searchingSiteName, { delay: 500 });
     console.log(`Typed site name "${searchingSiteName}"`);
 
+    // Trigger input and keyup events to ensure the application detects the input
+    // Some applications rely on these events to trigger search/filter functionality
+    await searchInput.dispatchEvent('input');
+    await searchInput.dispatchEvent('keyup');
+    await searchInput.dispatchEvent('keydown');
+    await searchInput.dispatchEvent('change');
+    
     // Wait for the location list (ul) to appear
     // The ul has many li, each li contains a button with text containing the site name
     console.log('Waiting for location list to appear...');
@@ -93,16 +104,36 @@ export async function waitForFindLocationPageAndSearchInput(
     await locationButton.click();
     console.log('Clicked the location button');
 
-    // Wait for another ul to appear with li tags containing child elements with the site name
-    console.log('Waiting for second location list to appear...');
-    const secondLocationList = page.locator('ul').nth(1);
-    await secondLocationList.waitFor({ state: 'visible', timeout: 30000 });
-    console.log('Second location list appeared');
+    // Wait for the first location list to disappear
+    console.log('Waiting for first location list to disappear...');
+    await locationList.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {
+      // If it doesn't disappear, that's okay, continue
+      console.log('First location list did not disappear, continuing...');
+    });
 
-    // Wait for list items in the second list that contain the site name
-    const secondListItems = secondLocationList.locator('li').filter({ hasText: searchingSiteName });
-    await secondListItems.first().waitFor({ state: 'visible', timeout: 30000 });
-    console.log(`Found location items containing "${searchingSiteName}"`);
+    // Wait for a new ul list to appear after clicking the first item
+    // The ul has many li, and one li (or its direct/indirect children) has the site name in the text
+    console.log('Waiting for new location list to appear after clicking first item...');
+    
+    // Wait for a ul that contains an li with the site name
+    const secondLocationList = page
+      .locator('ul')
+      .filter({ has: page.locator('li').filter({ hasText: searchingSiteName }) })
+      .first();
+    
+    await secondLocationList.waitFor({ state: 'visible', timeout: 30000 });
+    console.log('New location list appeared after clicking first item');
+
+    // Find the li that contains the site name (either directly or in its children/descendants)
+    // filter({ hasText: ... }) searches the element and all its descendants
+    console.log(`Looking for li containing "${searchingSiteName}" in new location list...`);
+    const secondListItem = secondLocationList
+      .locator('li')
+      .filter({ hasText: searchingSiteName })
+      .first();
+    
+    await secondListItem.waitFor({ state: 'visible', timeout: 30000 });
+    console.log(`Found li containing "${searchingSiteName}" in new location list`);
   }
 }
 
