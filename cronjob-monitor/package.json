@@ -6,7 +6,11 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts",
-    "process:products": "source ./load-env.sh && ts-node src/process-products.ts"
+    "process:products": "source ./load-env.sh && ts-node src/process-products.ts",
+    "test:site-check": "source ./load-env.sh && playwright test --config=src/site-check/playwright.config.ts",
+    "test:site-check:headed": "source ./load-env.sh && playwright test --config=src/site-check/playwright.config.ts --headed",
+    "test:site-check:debug": "source ./load-env.sh && playwright test --config=src/site-check/playwright.config.ts --debug",
+    "install:browsers": "playwright install chromium"
   },
   "keywords": [
     "csv",
@@ -16,7 +20,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
     "@types/node": "^20.10.0",
+    "dotenv": "^16.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },

@@ -8,5 +8,7 @@ export const config = {
   bjsCustomerId: process.env.BJs_CUSTOMER_ID || '',
   bjsLoyaltyId: process.env.BJs_LOYALTY_ID || '',
   bjsDeviceId: process.env.BJs_DEVICE_ID || '',
+  bjsWebUrl: process.env.BJs_Web_Url || '',
+  bjsMenuPath: process.env.BJs_Menu_Path || '',
 };
 
