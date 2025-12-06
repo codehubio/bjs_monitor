@@ -81,7 +81,7 @@ test.describe('BJs Menu Page', () => {
       console.log(`\nTesting location: ${location.name} (ID: ${location.id})`);
       
       // Navigate to find location page, search for location, and select by ID
-      await navigateToFindLocationPage(page, location.name, location.id);
+      await navigateToFindLocationPage(page, location.name, location.id, "delivery");
 
       // Wait a bit for the second list to fully render
       await page.waitForTimeout(2000);
