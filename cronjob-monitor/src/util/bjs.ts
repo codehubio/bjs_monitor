@@ -40,7 +40,10 @@ export async function getMenuItemList(
   try {
     const response: AxiosResponse<MenuItemListResponse> = await axios.get(url, {
       headers: {
-        SecurityToken: config.bjsSecurityToken
+        SecurityToken: config.bjsSecurityToken,
+        CustomerId: config.bjsCustomerId,
+        LoyaltyId: config.bjsLoyaltyId,
+        DeviceId: config.bjsDeviceId
       }
     });
 

@@ -4,6 +4,9 @@
 export const config = {
   bjsBaseUrl: process.env.BJs_BASE_URL || '',
   bjsGetMenuItemListUrl: process.env.BJs_GetMenuItemList_URL || '',
-  bjsSecurityToken: process.env.BJs_SECURITY_TOKEN || ''
+  bjsSecurityToken: process.env.BJs_SECURITY_TOKEN || '',
+  bjsCustomerId: process.env.BJs_CUSTOMER_ID || '',
+  bjsLoyaltyId: process.env.BJs_LOYALTY_ID || '',
+  bjsDeviceId: process.env.BJs_DEVICE_ID || '',
 };
 

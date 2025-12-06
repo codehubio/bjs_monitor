@@ -1,22 +1,45 @@
 import * as path from 'path';
 import { processProductsFromCSV } from './product/product-service';
 import { formatProductChange, saveChangesToJSON } from './product/output-service';
+import { enrichAddedProductsWithMenuItems } from './product/menu-item-enricher';
+import { ProductChange } from './types';
 
 /**
  * Main processing function
  */
-export function processProductsFile(csvFilePath: string, outputDir?: string): void {
+export async function processProductsFile(csvFilePath: string, outputDir?: string): Promise<void> {
   console.log(`Processing products CSV: ${csvFilePath}\n`);
   
   const result = processProductsFromCSV(csvFilePath);
   console.log(`Total rows found: ${result.rows}\n`);
   
+  // Enrich added products with menu item information
+  console.log('Enriching added products with menu item details...\n');
+  const enrichedAdded = await enrichAddedProductsWithMenuItems(result.added);
+  
+  // Create a map of enriched added products for quick lookup
+  const enrichedMap = new Map<string, ProductChange>();
+  enrichedAdded.forEach(change => {
+    const key = `${change.friday.locationParsed?.id}-${change.friday.categoryParsed?.id}-${change.friday.productParsed?.id}`;
+    enrichedMap.set(key, change);
+  });
+  
+  // Update the all array with enriched added products
+  const allChanges: ProductChange[] = result.all.map(change => {
+    if (change.changeType === 'added') {
+      const key = `${change.friday.locationParsed?.id}-${change.friday.categoryParsed?.id}-${change.friday.productParsed?.id}`;
+      const enriched = enrichedMap.get(key);
+      return enriched || change;
+    }
+    return change;
+  });
+  
   const changes = {
-    added: result.added,
+    added: enrichedAdded,
     removed: result.removed,
     modified: result.modified,
     moved: result.moved,
-    all: result.all
+    all: allChanges
   };
   
   console.log('=== PRODUCT CHANGES SUMMARY ===\n');
@@ -65,5 +88,8 @@ export function processProductsFile(csvFilePath: string, outputDir?: string): vo
 if (require.main === module) {
   const csvPath = path.resolve(__dirname, '../csv/products.csv');
   const resultDir = path.resolve(__dirname, '../result');
-  processProductsFile(csvPath, resultDir);
+  processProductsFile(csvPath, resultDir).catch(error => {
+    console.error('Error processing products:', error);
+    process.exit(1);
+  });
 }

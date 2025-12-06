@@ -21,12 +21,26 @@ export interface ProductEntry {
 }
 
 /**
+ * Menu item information from BJs API
+ */
+export interface MenuItemInfo {
+  ItemId?: string;
+  ItemName?: string;
+  ItemDesc?: string;
+  ItemPrice?: string;
+  ItemImageURL?: string;
+  ItemPLU?: string;
+  [key: string]: any; // Allow other fields from API
+}
+
+/**
  * Product change record comparing Thursday and Friday
  */
 export interface ProductChange {
   thursday: ProductEntry;
   friday: ProductEntry;
   changeType: 'added' | 'removed' | 'modified' | 'moved';
+  menuItemInfo?: MenuItemInfo; // Menu item details for added products
 }
 
 /**

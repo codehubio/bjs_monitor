@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts",
-    "process:products": "ts-node src/process-products.ts"
+    "process:products": "source ./load-env.sh && ts-node src/process-products.ts"
   },
   "keywords": [
     "csv",
