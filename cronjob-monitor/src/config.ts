@@ -10,5 +10,6 @@ export const config = {
   bjsDeviceId: process.env.BJs_DEVICE_ID || '',
   bjsWebUrl: process.env.BJs_Web_Url || '',
   bjsMenuPath: process.env.BJs_Menu_Path || '',
+  bjsFindLocationPath: process.env.BJs_Find_Location_Path || '',
 };
 
