@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
+import { parse } from 'csv-parse/sync';
 import { ProductRow } from '../types';
 
 /**
@@ -9,60 +9,35 @@ import { ProductRow } from '../types';
  */
 export function parseProductsCSV(filePath: string): ProductRow[] {
   const content = fs.readFileSync(filePath, 'utf-8');
-  const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   
-  // Skip the first two header rows
+  // Parse CSV using csv-parse
+  // Skip the first two header rows (from_line: 3 means start from line 3, 1-indexed)
   // Row 1: "Thursday,,,Friday,,"
   // Row 2: "Location,Category,Product,Location,Category,Product"
-  const dataLines = lines.slice(2);
+  const records = parse(content, {
+    from_line: 3, // Start from line 3 (skip first 2 header rows)
+    skip_empty_lines: true,
+    trim: true,
+    relax_column_count: true, // Allow rows with different column counts
+    columns: false // Don't use first row as column names
+  }) as string[][];
   
   const rows: ProductRow[] = [];
   
-  for (const line of dataLines) {
-    // Parse CSV line (handling quoted values if needed)
-    const columns = parseCSVLine(line);
-    
-    if (columns.length >= 6) {
+  for (const record of records) {
+    // Ensure we have at least 6 columns
+    if (record && record.length >= 6) {
       rows.push({
-        thursdayLocation: columns[0] || '',
-        thursdayCategory: columns[1] || '',
-        thursdayProduct: columns[2] || '',
-        fridayLocation: columns[3] || '',
-        fridayCategory: columns[4] || '',
-        fridayProduct: columns[5] || ''
+        thursdayLocation: record[0] || '',
+        thursdayCategory: record[1] || '',
+        thursdayProduct: record[2] || '',
+        fridayLocation: record[3] || '',
+        fridayCategory: record[4] || '',
+        fridayProduct: record[5] || ''
       });
     }
   }
   
   return rows;
-}
-
-/**
- * Parse a CSV line, handling quoted values
- * @param line CSV line to parse
- * @returns Array of column values
- */
-function parseCSVLine(line: string): string[] {
-  const columns: string[] = [];
-  let current = '';
-  let inQuotes = false;
-  
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      columns.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  
-  // Add the last column
-  columns.push(current.trim());
-  
-  return columns;
 }
 
