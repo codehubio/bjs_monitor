@@ -12,6 +12,16 @@ export function buildFindLocationUrl(): string {
 }
 
 /**
+ * Build the location URL from configuration
+ * @returns The complete location URL
+ */
+export function buildLocationUrl(): string {
+  const baseUrl = config.bjsWebUrl.replace(/\/$/, ''); // Remove trailing slash if present
+  const locationPath = config.bjsLocationPath.replace(/^\//, ''); // Remove leading slash if present
+  return `${baseUrl}/${locationPath}`;
+}
+
+/**
  * Navigate to find location page and enter search text
  * @param page Playwright page object
  * @param searchingSiteName Site name to search for
@@ -63,8 +73,7 @@ export async function waitForFindLocationPageAndSearchInput(
   console.log(`Looking for buttons containing "${searchingSiteName}" in location list...`);
   const locationButtons = locationList
     .locator('li')
-    .locator('button')
-    .filter({ hasText: searchingSiteName });
+    .locator('button');
   
   const buttonCount = await locationButtons.count();
   console.log(`Found ${buttonCount} button(s) containing "${searchingSiteName}"`);
@@ -135,11 +144,21 @@ export async function waitForFindLocationPageAndSearchInput(
       await chooseLocationButton.waitFor({ state: 'visible', timeout: 30000 });
       console.log('Found button with "Choose location" text');
       
-      console.log('Clicking "Choose location" button...');
-      await chooseLocationButton.click();
-      console.log('Clicked "Choose location" button');
-      
-      return true; // Successfully found and clicked
+        console.log('Clicking "Choose location" button...');
+        await chooseLocationButton.click();
+        console.log('Clicked "Choose location" button');
+        
+        // Wait for new page to appear (about 5 seconds)
+        console.log('Waiting for new page to appear (5 seconds)...');
+        await page.waitForTimeout(5000);
+        
+        // Navigate to BJs_Location_Path
+        const locationUrl = buildLocationUrl();
+        console.log(`Navigating to location URL: ${locationUrl}`);
+        await page.goto(locationUrl);
+        console.log('Navigated to location page');
+        
+        return true; // Successfully found and clicked
     } catch (error) {
       console.warn(`Li with id="${locationId}" not found in new location list`);
       return false; // Not found, need to try next button

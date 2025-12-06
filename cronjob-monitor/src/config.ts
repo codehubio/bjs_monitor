@@ -11,5 +11,6 @@ export const config = {
   bjsWebUrl: process.env.BJs_Web_Url || '',
   bjsMenuPath: process.env.BJs_Menu_Path || '',
   bjsFindLocationPath: process.env.BJs_Find_Location_Path || '',
+  bjsLocationPath: process.env.BJs_Location_Path || '',
 };
 
