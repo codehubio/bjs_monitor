@@ -9,11 +9,8 @@
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
     "test:daily": "source ./load-env.sh && playwright test src/graylog/scenarios/*.spec.ts",
-    "test:submit-order": "source ./load-env.sh && playwright test src/graylog/scenarios/submit-order.spec.ts",
-    "test:paypal-error": "source ./load-env.sh && playwright test src/graylog/scenarios/paypal.spec.ts",
-    "test:failed-order": "source ./load-env.sh && playwright test src/graylog/scenarios/failed-order.spec.ts",
-    "test:failed-payment": "source ./load-env.sh && playwright test src/graylog/scenarios/failed-payment.spec.ts",
-    "test:daily-eapi-multi-card": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-eapi-multi-card.spec.ts",
+    "test:daily-1": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-1.spec.ts",
+    "test:daily-2": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-2.spec.ts",
     "codegen": "playwright codegen",
     "install:browsers": "playwright install chromium",
     "upload:s3": "ts-node src/utils/uploadToS3.ts"

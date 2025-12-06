@@ -80,6 +80,32 @@ export async function buildPaypalBlock(page: Page, fromTime: string, toTime: str
     }]);
     results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenamePaypal) }}]);
     results.push(groupedDataPaypal);
+
+
+    const successfulPaypalButFailedSubmitOrderQuery = queries[1] as any;
+    await graylogHelper.loginAndVisitSearchView(successfulPaypalButFailedSubmitOrderQuery.view);
+    await graylogHelper.selectTimeRange(fromTime, toTime);
+    await graylogHelper.enterQueryText(successfulPaypalButFailedSubmitOrderQuery.query);
+    const screenshotFilenameSuccessfulPaypalButFailedSubmitOrder = `query-paypal-2-result.png`;
+    const screenshotPathSuccessfulPaypalButFailedSubmitOrder = path.join(resultDir, screenshotFilenameSuccessfulPaypalButFailedSubmitOrder);
+    await page.screenshot({ path: screenshotPathSuccessfulPaypalButFailedSubmitOrder, fullPage: true });
+    console.log(`Screenshot saved: ${screenshotPathSuccessfulPaypalButFailedSubmitOrder}`);
+    let apiCount: number | null = null;
+      try {
+        console.log(`\nExecuting query via API...`);
+        const streamIds = config.graylogEapiStream ? [config.graylogEapiStream] : undefined;
+        const apiResult = await graylogApi.executeCountQueryByStreamIdsAndWait(successfulPaypalButFailedSubmitOrderQuery.query, fromTimeISO, toTimeISO, [config.graylogUserFlowStream]);
+        apiCount = apiResult.count;
+        console.log(`API Query Count: ${apiCount ?? 'N/A'}`);
+      } catch (error) {
+        console.error(`Error executing query via API:`, error);
+        // Continue with UI-based execution even if API fails
+      }
+    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenameSuccessfulPaypalButFailedSubmitOrder) }}]);
+    results.push([{
+      name: { type: 'text', value: successfulPaypalButFailedSubmitOrderQuery.name },
+      total: { type: 'text', value: apiCount }
+    }]);
     return results;
 
 }
