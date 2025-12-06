@@ -11,6 +11,80 @@ export const ORDER_TYPE_TEXT_MAP: Record<'takeout' | 'delivery' | 'dinein', stri
 };
 
 /**
+ * Handle takeout order type UI flow
+ * @param page Playwright page object
+ */
+export async function handleTakeoutOrderType(page: Page): Promise<void> {
+  // TODO: Implement takeout-specific UI handling
+  console.log('Handling takeout order type...');
+}
+
+/**
+ * Handle delivery order type UI flow
+ * @param page Playwright page object
+ */
+export async function handleDeliveryOrderType(page: Page): Promise<void> {
+  console.log('Handling delivery order type...');
+  
+  // Wait for the search input to appear
+  console.log('Waiting for search input with data-testid="search-input"...');
+  const searchInput = page.getByTestId('search-input');
+  await searchInput.waitFor({ state: 'visible', timeout: 30000 });
+  console.log('Search input appeared');
+  
+  // Enter the text "BJ's Test Location 1"
+  const addressText = "BJ's Test Location 1";
+  console.log(`Entering address text "${addressText}"...`);
+  await searchInput.fill(addressText);
+  console.log(`Entered address text "${addressText}"`);
+  
+  // Wait for the "Confirm address" button to appear
+  console.log('Waiting for button with text "Confirm address"...');
+  const confirmButton = page
+    .locator('button')
+    .filter({ hasText: /confirm address/i })
+    .first();
+  await confirmButton.waitFor({ state: 'visible', timeout: 30000 });
+  console.log('Found button with text "Confirm address"');
+  
+  // Click the "Confirm address" button
+  console.log('Clicking "Confirm address" button...');
+  await confirmButton.click();
+  console.log('Clicked "Confirm address" button');
+  
+  // Wait for the "Start my order" button to appear and React state to update
+  console.log('Waiting for button with text "Start my order"...');
+  
+  // Wait for the button to be attached to the DOM
+  const startOrderButton = page
+    .locator('button')
+    .filter({ has: page.getByText(/start my order/i) })
+    .first();
+  
+  await startOrderButton.waitFor({ state: 'attached', timeout: 30000 });
+  console.log('Button found in DOM, waiting for React state to update...');
+  
+  // Wait a bit for React state to update
+  await page.waitForTimeout(2000);
+  
+  // Try clicking via JavaScript to bypass Playwright's actionability checks
+  console.log('Attempting to click button via JavaScript...');
+  await startOrderButton.evaluate((button: any) => {
+    button.click();
+  });
+  console.log('Clicked "Start my order" button via JavaScript');
+}
+
+/**
+ * Handle dine-in order type UI flow
+ * @param page Playwright page object
+ */
+export async function handleDineInOrderType(page: Page): Promise<void> {
+  // TODO: Implement dine-in-specific UI handling
+  console.log('Handling dine-in order type...');
+}
+
+/**
  * Build the find location URL from configuration
  * @returns The complete find location URL
  */
@@ -187,27 +261,39 @@ export async function waitForFindLocationPageAndSearchInput(
             // Try clicking with force option in case the element is covered
             await inputElement.click({ force: true });
             console.log(`Clicked input with placeholder "${placeholderText}"`);
-            // Click on the button with text "Order <mapped_value>" (case insensitive)
-            const orderButtonText = `Order ${orderTypeText}`;
-            console.log(`Looking for button with text "${orderButtonText}" (case insensitive)...`);
-            const orderButton = page
-              .locator('button')
-              .filter({ hasText: new RegExp(`^Order ${orderTypeText}$`, 'i') })
-              .first();
-            
-            try {
-              await orderButton.waitFor({ state: 'visible', timeout: 30000 });
-              console.log(`Found button with text "${orderButtonText}"`);
-              
-              console.log(`Clicking button with text "${orderButtonText}"...`);
-              await orderButton.click();
-              console.log(`Clicked button with text "${orderButtonText}"`);
-            } catch (error) {
-              console.warn(`Button with text "${orderButtonText}" not found`);
+             // Click on the button with text "Order <mapped_value>" (case insensitive)
+             const orderButtonText = `Order ${orderTypeText}`;
+             console.log(`Looking for button with text "${orderButtonText}" (case insensitive)...`);
+             const orderButton = page
+               .locator('button')
+               .filter({ hasText: new RegExp(`^Order ${orderTypeText}$`, 'i') })
+               .first();
+             
+             try {
+               await orderButton.waitFor({ state: 'visible', timeout: 30000 });
+               console.log(`Found button with text "${orderButtonText}"`);
+               
+               console.log(`Clicking button with text "${orderButtonText}"...`);
+               await orderButton.click();
+               console.log(`Clicked button with text "${orderButtonText}"`);
+             } catch (error) {
+               console.warn(`Button with text "${orderButtonText}" not found`);
+             }
+            // Call the appropriate handler function based on order type
+            switch (orderType) {
+              case 'takeout':
+                await handleTakeoutOrderType(page);
+                break;
+              case 'delivery':
+                await handleDeliveryOrderType(page);
+                break;
+              case 'dinein':
+                await handleDineInOrderType(page);
+                break;
             }
             
           } catch (error) {
-            console.warn(`Input with placeholder "${placeholderText}" not found`);
+            console.log(error);
           }
         }
         

@@ -64,7 +64,7 @@ function getLocationsFromProductsChanges(): Array<{ name: string; id: string }> 
 }
 
 test.describe('BJs Menu Page', () => {
-  test('should visit the menu page and search for locations from products-changes.json', async ({ page }) => {
+  test('should visit the menu page and search for locations from products-changes.json', async ({ browser }) => {
     // Get locations (name and id) from products-changes.json
     const locations = getLocationsFromProductsChanges();
     console.log(`Found ${locations.length} unique locations: ${locations.map(l => `${l.name} (${l.id})`).join(', ')}`);
@@ -76,25 +76,38 @@ test.describe('BJs Menu Page', () => {
       console.log(`Created screenshot directory: ${screenshotDir}`);
     }
 
-    // Test each location
+    // Test each location with a new browser context/page
     for (const location of locations) {
       console.log(`\nTesting location: ${location.name} (ID: ${location.id})`);
       
-      // Navigate to find location page, search for location, and select by ID
-      await navigateToFindLocationPage(page, location.name, location.id, "delivery");
+      // Create a new browser context for this location
+      const context = await browser.newContext({
+        permissions: ['geolocation'],
+        viewport: null,
+      });
+      const page = await context.newPage();
+      
+      try {
+        // Navigate to find location page, search for location, and select by ID
+        await navigateToFindLocationPage(page, location.name, location.id, "delivery");
 
-      // Wait a bit for the second list to fully render
-      await page.waitForTimeout(2000);
+        // Wait a bit for the second list to fully render
+        await page.waitForTimeout(2000);
 
-      // Take a screenshot for this location
-      const screenshotFilename = `menu-page-${location.name.replace(/\s+/g, '-')}.png`;
-      const screenshotPath = path.join(screenshotDir, screenshotFilename);
-      await page.screenshot({ path: screenshotPath, fullPage: true });
-      console.log(`Screenshot saved: ${screenshotPath}`);
+        // Take a screenshot for this location
+        const screenshotFilename = `menu-page-${location.name.replace(/\s+/g, '-')}.png`;
+        const screenshotPath = path.join(screenshotDir, screenshotFilename);
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+        console.log(`Screenshot saved: ${screenshotPath}`);
 
-      // Verify page loaded successfully
-      const baseUrl = config.bjsWebUrl.replace(/\/$/, '');
-      expect(page.url()).toContain(baseUrl);
+        // Verify page loaded successfully
+        const baseUrl = config.bjsWebUrl.replace(/\/$/, '');
+        expect(page.url()).toContain(baseUrl);
+      } finally {
+        // Close the page and context for this location
+        await page.close();
+        await context.close();
+      }
     }
   });
 });
