@@ -1,0 +1,24 @@
+{
+  "name": "cronjob-monitor",
+  "version": "1.0.0",
+  "description": "Monitor and analyze product changes from CSV files",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "process:products": "ts-node src/process-products.ts"
+  },
+  "keywords": [
+    "csv",
+    "monitoring",
+    "products"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
+
