@@ -13,6 +13,26 @@
         "success": 2430,
         "failed": 358
       }
+    },
+    "eapi": {
+      "total": 146767,
+      "errors4xx": 28,
+      "errors5xx": 0,
+      "errorsOther": 0,
+      "httpErrors": [
+        {
+          "status": "401",
+          "count": 26
+        },
+        {
+          "status": "404",
+          "count": 2
+        }
+      ]
+    },
+    "order": {
+      "success": 2396,
+      "failed": 133
     }
   },
   {
