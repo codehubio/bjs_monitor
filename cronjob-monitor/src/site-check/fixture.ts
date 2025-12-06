@@ -15,10 +15,12 @@ export function buildFindLocationUrl(): string {
  * Navigate to find location page and enter search text
  * @param page Playwright page object
  * @param searchingSiteName Optional site name to search for
+ * @param locationId Optional location ID to select (from locationParsed.id)
  */
 export async function waitForFindLocationPageAndSearchInput(
   page: Page,
-  searchingSiteName?: string
+  searchingSiteName?: string,
+  locationId?: string
 ): Promise<void> {
   // Navigate directly to the find location page
   const findLocationUrl = buildFindLocationUrl();
@@ -92,21 +94,21 @@ export async function waitForFindLocationPageAndSearchInput(
     await secondLocationList.waitFor({ state: 'visible', timeout: 30000 });
     console.log('New location list appeared after clicking first item');
 
-    // Find and select the li that contains the site name (either directly or in its children/descendants)
-    // filter({ hasText: ... }) searches the element and all its descendants
-    console.log(`Looking for li containing "${searchingSiteName}" in new location list...`);
-    const secondListItem = secondLocationList
-      .locator('li')
-      .filter({ hasText: searchingSiteName })
-      .first();
-    
-    await secondListItem.waitFor({ state: 'visible', timeout: 30000 });
-    console.log(`Found li containing "${searchingSiteName}" in new location list`);
-    
-    // Click the li item that matches the search text
-    console.log(`Clicking li item with text matching "${searchingSiteName}"...`);
-    await secondListItem.click();
-    console.log(`Clicked li item with text matching "${searchingSiteName}"`);
+    // Find and select the li with id matching locationParsed.id
+    if (locationId) {
+      console.log(`Looking for li with id="${locationId}" in new location list...`);
+      const secondListItem = secondLocationList
+        .locator(`li[id="${locationId}"]`)
+        .first();
+      
+      await secondListItem.waitFor({ state: 'visible', timeout: 30000 });
+      console.log(`Found li with id="${locationId}" in new location list`);
+      
+      // Click the li item that matches the location ID
+      console.log(`Clicking li item with id="${locationId}"...`);
+      await secondListItem.click();
+      console.log(`Clicked li item with id="${locationId}"`);
+    }
     
     // Click on the button that has direct/indirect children with text "Choose location"
     console.log('Looking for button with "Choose location" text...');
@@ -128,11 +130,13 @@ export async function waitForFindLocationPageAndSearchInput(
  * Complete flow: Navigate to find location page and enter search text
  * @param page Playwright page object
  * @param searchingSiteName Optional site name to search for in the search input
+ * @param locationId Optional location ID to select (from locationParsed.id)
  */
 export async function navigateToFindLocationPage(
   page: Page,
-  searchingSiteName?: string
+  searchingSiteName?: string,
+  locationId?: string
 ): Promise<void> {
-  await waitForFindLocationPageAndSearchInput(page, searchingSiteName);
+  await waitForFindLocationPageAndSearchInput(page, searchingSiteName, locationId);
 }
 

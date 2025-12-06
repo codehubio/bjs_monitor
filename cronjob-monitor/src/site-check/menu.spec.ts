@@ -6,9 +6,9 @@ import { navigateToFindLocationPage } from './fixture';
 import { ProductChange } from '../types';
 
 /**
- * Read products-changes.json and extract unique location names
+ * Read products-changes.json and extract unique location names and IDs
  */
-function getLocationNamesFromProductsChanges(): string[] {
+function getLocationsFromProductsChanges(): Array<{ name: string; id: string }> {
   const jsonPath = path.resolve(__dirname, '../../result/products-changes.json');
   
   if (!fs.existsSync(jsonPath)) {
@@ -26,45 +26,48 @@ function getLocationNamesFromProductsChanges(): string[] {
     };
   } = JSON.parse(fileContent);
 
-  // Extract unique location names from all changes
-  const locationNames = new Set<string>();
+  // Extract unique locations (name and id) from all changes
+  const locationMap = new Map<string, string>();
 
   // Get locations from added changes (use friday location)
   data.changes.added.forEach(change => {
-    if (change.friday.locationParsed?.name) {
-      locationNames.add(change.friday.locationParsed.name);
+    if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
+      locationMap.set(change.friday.locationParsed.name, change.friday.locationParsed.id);
     }
   });
 
   // Get locations from removed changes (use thursday location)
   data.changes.removed.forEach(change => {
-    if (change.thursday.locationParsed?.name) {
-      locationNames.add(change.thursday.locationParsed.name);
+    if (change.thursday.locationParsed?.name && change.thursday.locationParsed?.id) {
+      locationMap.set(change.thursday.locationParsed.name, change.thursday.locationParsed.id);
     }
   });
 
   // Get locations from modified changes (use friday location)
   data.changes.modified.forEach(change => {
-    if (change.friday.locationParsed?.name) {
-      locationNames.add(change.friday.locationParsed.name);
+    if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
+      locationMap.set(change.friday.locationParsed.name, change.friday.locationParsed.id);
     }
   });
 
   // Get locations from moved changes (use friday location)
   data.changes.moved.forEach(change => {
-    if (change.friday.locationParsed?.name) {
-      locationNames.add(change.friday.locationParsed.name);
+    if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
+      locationMap.set(change.friday.locationParsed.name, change.friday.locationParsed.id);
     }
   });
 
-  return Array.from(locationNames).sort();
+  // Convert to array and sort by name
+  return Array.from(locationMap.entries())
+    .map(([name, id]) => ({ name, id }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 test.describe('BJs Menu Page', () => {
   test('should visit the menu page and search for locations from products-changes.json', async ({ page }) => {
-    // Get location names from products-changes.json
-    const locationNames = getLocationNamesFromProductsChanges();
-    console.log(`Found ${locationNames.length} unique locations: ${locationNames.join(', ')}`);
+    // Get locations (name and id) from products-changes.json
+    const locations = getLocationsFromProductsChanges();
+    console.log(`Found ${locations.length} unique locations: ${locations.map(l => `${l.name} (${l.id})`).join(', ')}`);
 
     // Create screenshot directory if it doesn't exist
     const screenshotDir = path.resolve(__dirname, '../../result/screenshot');
@@ -74,17 +77,17 @@ test.describe('BJs Menu Page', () => {
     }
 
     // Test each location
-    for (const locationName of locationNames) {
-      console.log(`\nTesting location: ${locationName}`);
+    for (const location of locations) {
+      console.log(`\nTesting location: ${location.name} (ID: ${location.id})`);
       
-      // Navigate to menu, click Change Location, wait for find-location page, and search for location
-      await navigateToFindLocationPage(page, locationName);
+      // Navigate to find location page, search for location, and select by ID
+      await navigateToFindLocationPage(page, location.name, location.id);
 
       // Wait a bit for the second list to fully render
       await page.waitForTimeout(2000);
 
       // Take a screenshot for this location
-      const screenshotFilename = `menu-page-${locationName.replace(/\s+/g, '-')}.png`;
+      const screenshotFilename = `menu-page-${location.name.replace(/\s+/g, '-')}.png`;
       const screenshotPath = path.join(screenshotDir, screenshotFilename);
       await page.screenshot({ path: screenshotPath, fullPage: true });
       console.log(`Screenshot saved: ${screenshotPath}`);
