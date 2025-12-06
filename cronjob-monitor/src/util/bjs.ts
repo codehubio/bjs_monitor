@@ -43,10 +43,10 @@ export async function getMenuItemList(
         SecurityToken: config.bjsSecurityToken,
         CustomerId: config.bjsCustomerId,
         LoyaltyId: config.bjsLoyaltyId,
-        DeviceId: config.bjsDeviceId
+        DeviceId: config.bjsDeviceId,
       }
     });
-
+   
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
