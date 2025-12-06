@@ -37,13 +37,13 @@ test.describe('Daily 2 report', () => {
     const paypalBlock = await buildPaypalBlock(page, fromTime, toTime, prefix);
     results.push(...paypalBlock);
 
-    // results.push([{'Open Check Report':{ type: 'separator' }}]);  
-    // const openCheckBlock = await buildOpenCheckBlock(page, fromTime, toTime, prefix);
-    // results.push(...openCheckBlock);
+    results.push([{'Open Check Report':{ type: 'separator' }}]);  
+    const openCheckBlock = await buildOpenCheckBlock(page, fromTime, toTime, prefix);
+    results.push(...openCheckBlock);
     
-    // results.push([{'Payment Report':{ type: 'separator' }}]);  
-    // const failedPaymentBlock = await buildPaymentBlock(page, fromTime, toTime, prefix);
-    // results.push(...failedPaymentBlock)
+    results.push([{'Payment Report':{ type: 'separator' }}]);  
+    const failedPaymentBlock = await buildPaymentBlock(page, fromTime, toTime, prefix);
+    results.push(...failedPaymentBlock)
 
 
 
