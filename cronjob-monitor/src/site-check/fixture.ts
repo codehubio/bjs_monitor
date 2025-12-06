@@ -124,7 +124,7 @@ export async function waitForFindLocationPageAndSearchInput(
     await secondLocationList.waitFor({ state: 'visible', timeout: 30000 });
     console.log('New location list appeared after clicking first item');
 
-    // Find the li that contains the site name (either directly or in its children/descendants)
+    // Find and select the li that contains the site name (either directly or in its children/descendants)
     // filter({ hasText: ... }) searches the element and all its descendants
     console.log(`Looking for li containing "${searchingSiteName}" in new location list...`);
     const secondListItem = secondLocationList
@@ -134,6 +134,25 @@ export async function waitForFindLocationPageAndSearchInput(
     
     await secondListItem.waitFor({ state: 'visible', timeout: 30000 });
     console.log(`Found li containing "${searchingSiteName}" in new location list`);
+    
+    // Click the li item that matches the search text
+    console.log(`Clicking li item with text matching "${searchingSiteName}"...`);
+    await secondListItem.click();
+    console.log(`Clicked li item with text matching "${searchingSiteName}"`);
+    
+    // Click on the button that has direct/indirect children with text "Choose location"
+    console.log('Looking for button with "Choose location" text...');
+    const chooseLocationButton = page
+      .locator('button')
+      .filter({ hasText: /choose location/i })
+      .first();
+    
+    await chooseLocationButton.waitFor({ state: 'visible', timeout: 30000 });
+    console.log('Found button with "Choose location" text');
+    
+    console.log('Clicking "Choose location" button...');
+    await chooseLocationButton.click();
+    console.log('Clicked "Choose location" button');
   }
 }
 
