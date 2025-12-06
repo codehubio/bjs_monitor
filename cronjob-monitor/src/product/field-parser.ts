@@ -1,4 +1,4 @@
-import { ParsedField } from './types';
+import { ParsedField } from '../types';
 
 /**
  * Parse a field that contains "id: name" format

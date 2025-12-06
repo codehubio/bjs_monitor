@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ProductRow } from './types';
+import { ProductRow } from '../types';
 
 /**
  * Parse CSV file and return array of product rows
