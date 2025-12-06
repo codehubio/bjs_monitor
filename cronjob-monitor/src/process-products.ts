@@ -17,37 +17,21 @@ export async function processProductsFile(csvFilePath: string, outputDir?: strin
   console.log('Enriching added products with menu item details...\n');
   const enrichedAdded = await enrichAddedProductsWithMenuItems(result.added);
   
-  // Create a map of enriched added products for quick lookup
-  const enrichedMap = new Map<string, ProductChange>();
-  enrichedAdded.forEach(change => {
-    const key = `${change.friday.locationParsed?.id}-${change.friday.categoryParsed?.id}-${change.friday.productParsed?.id}`;
-    enrichedMap.set(key, change);
-  });
-  
-  // Update the all array with enriched added products
-  const allChanges: ProductChange[] = result.all.map(change => {
-    if (change.changeType === 'added') {
-      const key = `${change.friday.locationParsed?.id}-${change.friday.categoryParsed?.id}-${change.friday.productParsed?.id}`;
-      const enriched = enrichedMap.get(key);
-      return enriched || change;
-    }
-    return change;
-  });
-  
   const changes = {
     added: enrichedAdded,
     removed: result.removed,
     modified: result.modified,
-    moved: result.moved,
-    all: allChanges
+    moved: result.moved
   };
+  
+  const total = changes.added.length + changes.removed.length + changes.modified.length + changes.moved.length;
   
   console.log('=== PRODUCT CHANGES SUMMARY ===\n');
   console.log(`Added: ${changes.added.length}`);
   console.log(`Removed: ${changes.removed.length}`);
   console.log(`Modified: ${changes.modified.length}`);
   console.log(`Moved: ${changes.moved.length}`);
-  console.log(`Total changes: ${changes.all.length}\n`);
+  console.log(`Total changes: ${total}\n`);
   
   // Save to JSON file
   if (outputDir) {

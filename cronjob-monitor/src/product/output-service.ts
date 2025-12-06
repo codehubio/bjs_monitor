@@ -35,11 +35,12 @@ export function generateOutputJSON(changes: {
   removed: ProductChange[];
   modified: ProductChange[];
   moved: ProductChange[];
-  all: ProductChange[];
 }): any {
+  const total = changes.added.length + changes.removed.length + changes.modified.length + changes.moved.length;
+  
   return {
     summary: {
-      total: changes.all.length,
+      total: total,
       added: changes.added.length,
       removed: changes.removed.length,
       modified: changes.modified.length,
@@ -49,8 +50,7 @@ export function generateOutputJSON(changes: {
       added: changes.added,
       removed: changes.removed,
       modified: changes.modified,
-      moved: changes.moved,
-      all: changes.all
+      moved: changes.moved
     }
   };
 }
@@ -64,7 +64,6 @@ export function saveChangesToJSON(
     removed: ProductChange[];
     modified: ProductChange[];
     moved: ProductChange[];
-    all: ProductChange[];
   },
   outputDir: string,
   filename: string = 'products-changes.json'
