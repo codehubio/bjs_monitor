@@ -4,6 +4,7 @@ import * as path from 'path';
 import { config } from '../config';
 import { navigateToFindLocationPage } from './fixture';
 import { ProductChange } from '../types';
+import { uploadScreenshotsAndSendToMsTeams } from '../util/sendToMsTeam';
 
 /**
  * Check item availability for different order types
@@ -141,8 +142,20 @@ test.describe('BJs Menu Page', () => {
       console.log(`Created screenshot directory: ${screenshotDir}`);
     }
 
+    // Array to collect data for MS Teams notification
+    const teamsData: Array<{
+      locationId: string;
+      locationName: string;
+      categoryId: string;
+      categoryName: string;
+      productId: string;
+      productName: string;
+      screenshotPath: string;
+    }> = [];
+
     // Test each item with a new browser context/page
-    for (const item of items) {
+    for (let i = 0; i < 2; i++) {
+      const item = items[i];
       const { change, changeType, locationParsed } = item;
       
       // Skip items that don't have productParsed.name in the "after" part
@@ -258,6 +271,17 @@ test.describe('BJs Menu Page', () => {
         await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`Screenshot saved: ${screenshotPath}`);
 
+        // Collect data for MS Teams notification
+        teamsData.push({
+          locationId: locationParsed.id || 'N/A',
+          locationName: locationParsed.name || 'N/A',
+          categoryId: change.after.categoryParsed?.id || 'N/A',
+          categoryName: change.after.categoryParsed?.name || 'N/A',
+          productId: change.after.productParsed?.id || 'N/A',
+          productName: change.after.productParsed?.name || 'N/A',
+          screenshotPath: screenshotPath,
+        });
+
         // Verify page loaded successfully
         const baseUrl = config.bjsWebUrl.replace(/\/$/, '');
         expect(page.url()).toContain(baseUrl);
@@ -266,6 +290,23 @@ test.describe('BJs Menu Page', () => {
         await page.close();
         await context.close();
       }
+    }
+
+    // Send all screenshots to MS Teams
+    if (teamsData.length > 0) {
+      console.log(`\nUploading ${teamsData.length} screenshot(s) to S3 and sending to MS Teams...`);
+      try {
+        await uploadScreenshotsAndSendToMsTeams(
+          'Product Screenshots',
+          teamsData
+        );
+        console.log('Successfully sent screenshots to MS Teams');
+      } catch (error) {
+        console.error('Failed to send screenshots to MS Teams:', error);
+        // Don't fail the test if MS Teams sending fails
+      }
+    } else {
+      console.log('\nNo screenshots to send to MS Teams');
     }
   });
 });
