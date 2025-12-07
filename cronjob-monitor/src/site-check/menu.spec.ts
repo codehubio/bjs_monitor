@@ -228,7 +228,7 @@ test.describe('BJs Menu Page', () => {
         }
 
         // Take a screenshot for this item
-        // Format: year-month-date-location_id-location_name-category_id-category_name-product_id-product_name
+        // Format: year-month-date-location_id-location_name-category_id-category_name-product_id-product_name-order_type
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -251,7 +251,7 @@ test.describe('BJs Menu Page', () => {
         const productId = change.after.productParsed?.id || 'N/A';
         const productName = sanitize(change.after.productParsed?.name || 'N/A');
         
-        const screenshotFilename = `${dateStr}-${locationId}-${locationName}-${categoryId}-${categoryName}-${productId}-${productName}.png`;
+        const screenshotFilename = `${dateStr}-${locationId}-${locationName}-${categoryId}-${categoryName}-${productId}-${productName}-${orderType}.png`;
         const screenshotPath = path.join(screenshotDir, screenshotFilename);
         
         console.log(`Screenshot filename: ${screenshotFilename}`);
