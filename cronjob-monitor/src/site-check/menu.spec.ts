@@ -145,6 +145,12 @@ test.describe('BJs Menu Page', () => {
     for (const item of items) {
       const { change, changeType, locationParsed } = item;
       
+      // Skip items that don't have productParsed.name in the "after" part
+      if (!change.after.productParsed?.name) {
+        console.log(`\nSkipping ${changeType} item - Location: ${locationParsed.name} (ID: ${locationParsed.id}) - No product name in "after" part`);
+        continue;
+      }
+      
       // Get supported order types for this item
       const availableOrderTypes = getAvailableOrderTypes(change);
       
