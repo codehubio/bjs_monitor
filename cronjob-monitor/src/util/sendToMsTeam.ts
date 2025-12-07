@@ -58,7 +58,7 @@ export function buildProductAdaptiveCard(
     categoryName: string;
     productId: string;
     productName: string;
-    screenshotUrl: string;
+    screenshotUrl: string | 'Not found';
   }>
 ) {
   const body: any[] = [
@@ -80,7 +80,10 @@ export function buildProductAdaptiveCard(
       buildTableCell(`${row.locationId}: ${row.locationName}`),
       buildTableCell(`${row.categoryId}: ${row.categoryName}`),
       buildTableCell(`${row.productId}: ${row.productName}`),
-      buildTableCell({ type: 'image', value: row.screenshotUrl }),
+      // Show "Not found" as text if screenshotUrl is "Not found", otherwise show as image
+      row.screenshotUrl === 'Not found' 
+        ? buildTableCell('Not found')
+        : buildTableCell({ type: 'image', value: row.screenshotUrl }),
     ],
   }));
 
@@ -108,13 +111,11 @@ export function buildProductAdaptiveCard(
   };
 
   // Calculate column widths (4 columns)
-  // First column (Location) is 50% of its original width (12.5% instead of 25%)
-  // Remaining width (87.5%) is distributed among the other 3 columns
   const columns = [
-    { width: 10 },  // Location - reduced by 50%
-    { width: 20 }, // Category
-    { width: 20 }, // Product
-    { width: 50 }, // Screenshot
+    { width: 10 },  // Location
+    { width: 20 },  // Category
+    { width: 20 },  // Product
+    { width: 50 },  // Screenshot
   ];
 
   // Add table to body
@@ -215,14 +216,16 @@ export async function uploadScreenshotsAndSendToMsTeams(
     categoryName: string;
     productId: string;
     productName: string;
-    screenshotPath: string;
+    screenshotPath: string | null;
   }>,
   webhookUrl?: string
 ): Promise<void> {
-  // Upload all screenshots to S3 and get URLs
+  // Upload all screenshots to S3 and get URLs (skip if screenshotPath is null)
   const dataWithUrls = await Promise.all(
     data.map(async (item) => {
-      const screenshotUrl = await uploadFileToS3(item.screenshotPath);
+      const screenshotUrl = item.screenshotPath 
+        ? await uploadFileToS3(item.screenshotPath)
+        : 'Not found';
       return {
         locationId: item.locationId,
         locationName: item.locationName,

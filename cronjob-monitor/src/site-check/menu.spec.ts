@@ -150,11 +150,11 @@ test.describe('BJs Menu Page', () => {
       categoryName: string;
       productId: string;
       productName: string;
-      screenshotPath: string;
+      screenshotPath: string | null;
     }> = [];
 
     // Test each item with a new browser context/page
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const { change, changeType, locationParsed } = item;
       
@@ -193,6 +193,9 @@ test.describe('BJs Menu Page', () => {
         // Wait a bit for the second list to fully render
         await page.waitForTimeout(2000);
         
+        // Track product URL for Teams notification
+        let productUrl: string = 'Not found';
+        
         // For added items, wait for the <a> tag containing the product name
         if (changeType === 'added' && change.after.productParsed?.name) {
           const productName = change.after.productParsed.name;
@@ -203,73 +206,86 @@ test.describe('BJs Menu Page', () => {
             .filter({ has: page.getByText(productName) })
             .first();
           
-          await productLink.waitFor({ state: 'visible', timeout: 30000 });
-          console.log(`Found <a> tag containing product name: "${productName}"`);
-          
-          // Get the href and visit it
-          const href = await productLink.getAttribute('href');
-          if (href) {
-            console.log(`Visiting href: ${href}`);
-            await page.goto(href);
-            console.log(`Visited href: ${href}`);
+          try {
+            await productLink.waitFor({ state: 'visible', timeout: 15000 });
+            console.log(`Found <a> tag containing product name: "${productName}"`);
             
-            // Wait for 5 seconds
-            console.log('Waiting 5 seconds for potential age confirmation dialog...');
-            await page.waitForTimeout(3000);
-            
-            // Check if age confirmation dialog appears
-            const ageConfirmationButton = page
-              .locator('button')
-              .filter({ has: page.getByText(/yes, i am/i) })
-              .first();
-            
-            try {
-              // Try to find the button (with short timeout to check if dialog exists)
-              await ageConfirmationButton.waitFor({ state: 'visible', timeout: 2000 });
-              console.log('Age confirmation dialog detected, clicking "YES, I AM" button...');
-              await ageConfirmationButton.click();
-              console.log('Clicked "YES, I AM" button');
-              await ageConfirmationButton.waitFor({ state: 'visible', timeout: 3000 });
+            // Get the href and visit it
+            const href = await productLink.getAttribute('href');
+            if (href) {
+              productUrl = href;
+              console.log(`Visiting href: ${href}`);
+              await page.goto(href);
+              console.log(`Visited href: ${href}`);
+              
+              // Wait for 5 seconds
+              console.log('Waiting 5 seconds for potential age confirmation dialog...');
               await page.waitForTimeout(3000);
-            } catch (error) {
-              // Dialog didn't appear, which is fine
-              console.log('No age confirmation dialog appeared');
+              
+              // Check if age confirmation dialog appears
+              const ageConfirmationButton = page
+                .locator('button')
+                .filter({ has: page.getByText(/yes, i am/i) })
+                .first();
+              
+              try {
+                // Try to find the button (with short timeout to check if dialog exists)
+                await ageConfirmationButton.waitFor({ state: 'visible', timeout: 2000 });
+                console.log('Age confirmation dialog detected, clicking "YES, I AM" button...');
+                await ageConfirmationButton.click();
+                console.log('Clicked "YES, I AM" button');
+                await ageConfirmationButton.waitFor({ state: 'visible', timeout: 3000 });
+                await page.waitForTimeout(3000);
+              } catch (error) {
+                // Dialog didn't appear, which is fine
+                console.log('No age confirmation dialog appeared');
+              }
+            } else {
+              console.warn(`No href found on <a> tag containing product name: "${productName}"`);
             }
-          } else {
-            console.warn(`No href found on <a> tag containing product name: "${productName}"`);
+          } catch (error) {
+            // Product link not found
+            console.log(`Product link not found for "${productName}"`);
+            productUrl = 'Not found';
           }
         }
 
-        // Take a screenshot for this item
-        // Format: year-month-date-location_id-location_name-category_id-category_name-product_id-product_name-order_type
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
+        // Take a screenshot for this item only if product link was found
+        let screenshotPath: string | null = null;
         
-        // Helper function to sanitize filename parts
-        const sanitize = (str: string): string => {
-          return str
-            .replace(/\s+/g, '-')
-            .replace(/[^a-zA-Z0-9\-]/g, '')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
-        };
-        
-        const locationId = locationParsed.id || 'N/A';
-        const locationName = sanitize(locationParsed.name || 'N/A');
-        const categoryId = change.after.categoryParsed?.id || 'N/A';
-        const categoryName = sanitize(change.after.categoryParsed?.name || 'N/A');
-        const productId = change.after.productParsed?.id || 'N/A';
-        const productName = sanitize(change.after.productParsed?.name || 'N/A');
-        
-        const screenshotFilename = `${dateStr}-${locationId}-${locationName}-${categoryId}-${categoryName}-${productId}-${productName}-${orderType}.png`;
-        const screenshotPath = path.join(screenshotDir, screenshotFilename);
-        
-        console.log(`Screenshot filename: ${screenshotFilename}`);
-        await page.screenshot({ path: screenshotPath, fullPage: true });
-        console.log(`Screenshot saved: ${screenshotPath}`);
+        if (productUrl !== 'Not found') {
+          // Format: year-month-date-location_id-location_name-category_id-category_name-product_id-product_name-order_type
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
+          
+          // Helper function to sanitize filename parts
+          const sanitize = (str: string): string => {
+            return str
+              .replace(/\s+/g, '-')
+              .replace(/[^a-zA-Z0-9\-]/g, '')
+              .replace(/-+/g, '-')
+              .replace(/^-|-$/g, '');
+          };
+          
+          const locationId = locationParsed.id || 'N/A';
+          const locationName = sanitize(locationParsed.name || 'N/A');
+          const categoryId = change.after.categoryParsed?.id || 'N/A';
+          const categoryName = sanitize(change.after.categoryParsed?.name || 'N/A');
+          const productId = change.after.productParsed?.id || 'N/A';
+          const productName = sanitize(change.after.productParsed?.name || 'N/A');
+          
+          const screenshotFilename = `${dateStr}-${locationId}-${locationName}-${categoryId}-${categoryName}-${productId}-${productName}-${orderType}.png`;
+          screenshotPath = path.join(screenshotDir, screenshotFilename);
+          
+          console.log(`Screenshot filename: ${screenshotFilename}`);
+          await page.screenshot({ path: screenshotPath, fullPage: true });
+          console.log(`Screenshot saved: ${screenshotPath}`);
+        } else {
+          console.log('Skipping screenshot since product link was not found');
+        }
 
         // Collect data for MS Teams notification
         teamsData.push({
