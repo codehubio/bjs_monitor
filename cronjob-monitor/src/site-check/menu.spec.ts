@@ -40,12 +40,11 @@ function getAvailableOrderTypes(change: ProductChange): Array<'takeout' | 'deliv
 }
 
 /**
- * Read products-changes.json and extract all items with their locationParsed
+ * Read products-changes.json and extract all items with product after change
  */
 function getItemsFromProductsChanges(): Array<{ 
   change: ProductChange; 
   changeType: 'added' | 'removed' | 'modified' | 'moved';
-  locationParsed: { name: string; id: string };
 }> {
   const jsonPath = path.resolve(__dirname, '../../result/products-changes.json');
   
@@ -67,61 +66,44 @@ function getItemsFromProductsChanges(): Array<{
   const items: Array<{ 
     change: ProductChange; 
     changeType: 'added' | 'removed' | 'modified' | 'moved';
-    locationParsed: { name: string; id: string };
   }> = [];
 
-  // Get items from added changes (use after location)
+  // Get items from added changes (use after location and product)
   data.changes.added.forEach(change => {
-    if (change.after.locationParsed?.name && change.after.locationParsed?.id) {
+    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
-        changeType: 'added',
-        locationParsed: {
-          name: change.after.locationParsed.name,
-          id: change.after.locationParsed.id
-        }
+        changeType: 'added'
       });
     }
   });
 
-  // Get items from removed changes (use before location)
+  // Get items from removed changes (only if they have product after change)
   data.changes.removed.forEach(change => {
-    if (change.before.locationParsed?.name && change.before.locationParsed?.id) {
+    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
-        changeType: 'removed',
-        locationParsed: {
-          name: change.before.locationParsed.name,
-          id: change.before.locationParsed.id
-        }
+        changeType: 'removed'
       });
     }
   });
 
-  // Get items from modified changes (use after location)
+  // Get items from modified changes (use after location and product)
   data.changes.modified.forEach(change => {
-    if (change.after.locationParsed?.name && change.after.locationParsed?.id) {
+    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
-        changeType: 'modified',
-        locationParsed: {
-          name: change.after.locationParsed.name,
-          id: change.after.locationParsed.id
-        }
+        changeType: 'modified'
       });
     }
   });
 
-  // Get items from moved changes (use after location)
+  // Get items from moved changes (use after location and product)
   data.changes.moved.forEach(change => {
-    if (change.after.locationParsed?.name && change.after.locationParsed?.id) {
+    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
-        changeType: 'moved',
-        locationParsed: {
-          name: change.after.locationParsed.name,
-          id: change.after.locationParsed.id
-        }
+        changeType: 'moved'
       });
     }
   });
@@ -157,11 +139,11 @@ test.describe('BJs Menu Page', () => {
     // Test each item with a new browser context/page
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      const { change, changeType, locationParsed } = item;
+      const { change, changeType } = item;
       
       // Skip items that don't have productParsed.name in the "after" part
       if (!change.after.productParsed?.name) {
-        console.log(`\nSkipping ${changeType} item - Location: ${locationParsed.name} (ID: ${locationParsed.id}) - No product name in "after" part`);
+        console.log(`\nSkipping ${changeType} item - Location: ${change.after.locationParsed?.name || 'N/A'} (ID: ${change.after.locationParsed?.id || 'N/A'}) - No product name in "after" part`);
         continue;
       }
       
@@ -170,7 +152,7 @@ test.describe('BJs Menu Page', () => {
       
       // Skip if no order types are available
       if (availableOrderTypes.length === 0) {
-        console.log(`\nSkipping ${changeType} item - Location: ${locationParsed.name} (ID: ${locationParsed.id}) - No supported order types`);
+        console.log(`\nSkipping ${changeType} item - Location: ${change.after.locationParsed?.name || 'N/A'} (ID: ${change.after.locationParsed?.id || 'N/A'}) - No supported order types`);
         continue;
       }
       
@@ -178,7 +160,7 @@ test.describe('BJs Menu Page', () => {
       const orderType = availableOrderTypes[0];
       
       // Output item details before proceeding (one line)
-      console.log(`\nProcessing ${changeType} | Location ID: ${locationParsed.id} | Location Name: ${locationParsed.name} | Category ID: ${change.after.categoryParsed?.id || 'N/A'} | Category Name: ${change.after.categoryParsed?.name || 'N/A'} | Item ID: ${change.after.productParsed?.id || 'N/A'} | Item Name: ${change.after.productParsed?.name || 'N/A'} | Order Type: ${orderType}`);
+      console.log(`\nProcessing ${changeType} | Location ID: ${change.after.locationParsed?.id || 'N/A'} | Location Name: ${change.after.locationParsed?.name || 'N/A'} | Category ID: ${change.after.categoryParsed?.id || 'N/A'} | Category Name: ${change.after.categoryParsed?.name || 'N/A'} | Item ID: ${change.after.productParsed?.id || 'N/A'} | Item Name: ${change.after.productParsed?.name || 'N/A'} | Order Type: ${orderType}`);
       
       // Create a new browser context for this item
       const context = await browser.newContext({
@@ -189,7 +171,7 @@ test.describe('BJs Menu Page', () => {
       
       try {
         // Navigate to find location page, search for location, and select by ID
-        await waitForFindLocationPageAndSearchInputAndSelectOrderType(page, locationParsed.name, locationParsed.id, orderType);
+        await waitForFindLocationPageAndSearchInputAndSelectOrderType(page, change.after.locationParsed!.name, change.after.locationParsed!.id, orderType);
 
         // Wait a bit for the second list to fully render
         await page.waitForTimeout(2000);
@@ -271,8 +253,8 @@ test.describe('BJs Menu Page', () => {
               .replace(/^-|-$/g, '');
           };
           
-          const locationId = locationParsed.id || 'N/A';
-          const locationName = sanitize(locationParsed.name || 'N/A');
+          const locationId = change.after.locationParsed?.id || 'N/A';
+          const locationName = sanitize(change.after.locationParsed?.name || 'N/A');
           const categoryId = change.after.categoryParsed?.id || 'N/A';
           const categoryName = sanitize(change.after.categoryParsed?.name || 'N/A');
           const productId = change.after.productParsed?.id || 'N/A';
@@ -290,8 +272,8 @@ test.describe('BJs Menu Page', () => {
 
         // Collect data for MS Teams notification
         teamsData.push({
-          locationId: locationParsed.id || 'N/A',
-          locationName: locationParsed.name || 'N/A',
+          locationId: change.after.locationParsed?.id || 'N/A',
+          locationName: change.after.locationParsed?.name || 'N/A',
           categoryId: change.after.categoryParsed?.id || 'N/A',
           categoryName: change.after.categoryParsed?.name || 'N/A',
           productId: change.after.productParsed?.id || 'N/A',

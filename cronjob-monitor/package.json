@@ -7,6 +7,7 @@
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "process:products": "source ./load-env.sh && ts-node src/process-products.ts",
+    "process:sub-attributes": "source ./load-env.sh && ts-node src/process-sub-attributes.ts",
     "test:site-check": "source ./load-env.sh && playwright test --config=src/site-check/playwright.config.ts",
     "test:site-check:headed": "source ./load-env.sh && playwright test --config=src/site-check/playwright.config.ts --headed",
     "test:site-check:debug": "source ./load-env.sh && playwright test --config=src/site-check/playwright.config.ts --debug",
