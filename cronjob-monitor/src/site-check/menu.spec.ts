@@ -6,9 +6,46 @@ import { navigateToFindLocationPage } from './fixture';
 import { ProductChange } from '../types';
 
 /**
- * Read products-changes.json and extract unique location names and IDs
+ * Check item availability for different order types
+ * @param change ProductChange item to check
+ * @returns Array of available order types: 'takeout', 'delivery', 'dinein'
  */
-function getLocationsFromProductsChanges(): Array<{ name: string; id: string }> {
+function getAvailableOrderTypes(change: ProductChange): Array<'takeout' | 'delivery' | 'dinein'> {
+  const availableOrderTypes: Array<'takeout' | 'delivery' | 'dinein'> = [];
+  
+  // Check menuItemInfo for availability flags
+  const menuItemInfo = change.menuItemInfo;
+  if (!menuItemInfo) {
+    // If no menuItemInfo, assume all order types are available
+    return ['takeout', 'delivery', 'dinein'];
+  }
+  
+  // Check TakeoutHidden
+  if (menuItemInfo.TakeoutHidden === "0") {
+    availableOrderTypes.push('takeout');
+  }
+  
+  // Check DineInHidden
+  if (menuItemInfo.DineInHidden === "0") {
+    availableOrderTypes.push('dinein');
+  }
+  
+  // Check DeliveryHidden
+  if (menuItemInfo.DeliveryHidden === "0") {
+    availableOrderTypes.push('delivery');
+  }
+  
+  return availableOrderTypes;
+}
+
+/**
+ * Read products-changes.json and extract all items with their locationParsed
+ */
+function getItemsFromProductsChanges(): Array<{ 
+  change: ProductChange; 
+  changeType: 'added' | 'removed' | 'modified' | 'moved';
+  locationParsed: { name: string; id: string };
+}> {
   const jsonPath = path.resolve(__dirname, '../../result/products-changes.json');
   
   if (!fs.existsSync(jsonPath)) {
@@ -26,48 +63,76 @@ function getLocationsFromProductsChanges(): Array<{ name: string; id: string }> 
     };
   } = JSON.parse(fileContent);
 
-  // Extract unique locations (name and id) from all changes
-  const locationMap = new Map<string, string>();
+  const items: Array<{ 
+    change: ProductChange; 
+    changeType: 'added' | 'removed' | 'modified' | 'moved';
+    locationParsed: { name: string; id: string };
+  }> = [];
 
-  // Get locations from added changes (use friday location)
+  // Get items from added changes (use friday location)
   data.changes.added.forEach(change => {
     if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
-      locationMap.set(change.friday.locationParsed.name, change.friday.locationParsed.id);
+      items.push({
+        change,
+        changeType: 'added',
+        locationParsed: {
+          name: change.friday.locationParsed.name,
+          id: change.friday.locationParsed.id
+        }
+      });
     }
   });
 
-  // Get locations from removed changes (use thursday location)
+  // Get items from removed changes (use thursday location)
   data.changes.removed.forEach(change => {
     if (change.thursday.locationParsed?.name && change.thursday.locationParsed?.id) {
-      locationMap.set(change.thursday.locationParsed.name, change.thursday.locationParsed.id);
+      items.push({
+        change,
+        changeType: 'removed',
+        locationParsed: {
+          name: change.thursday.locationParsed.name,
+          id: change.thursday.locationParsed.id
+        }
+      });
     }
   });
 
-  // Get locations from modified changes (use friday location)
+  // Get items from modified changes (use friday location)
   data.changes.modified.forEach(change => {
     if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
-      locationMap.set(change.friday.locationParsed.name, change.friday.locationParsed.id);
+      items.push({
+        change,
+        changeType: 'modified',
+        locationParsed: {
+          name: change.friday.locationParsed.name,
+          id: change.friday.locationParsed.id
+        }
+      });
     }
   });
 
-  // Get locations from moved changes (use friday location)
+  // Get items from moved changes (use friday location)
   data.changes.moved.forEach(change => {
     if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
-      locationMap.set(change.friday.locationParsed.name, change.friday.locationParsed.id);
+      items.push({
+        change,
+        changeType: 'moved',
+        locationParsed: {
+          name: change.friday.locationParsed.name,
+          id: change.friday.locationParsed.id
+        }
+      });
     }
   });
 
-  // Convert to array and sort by name
-  return Array.from(locationMap.entries())
-    .map(([name, id]) => ({ name, id }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return items;
 }
 
 test.describe('BJs Menu Page', () => {
   test('should visit the menu page and search for locations from products-changes.json', async ({ browser }) => {
-    // Get locations (name and id) from products-changes.json
-    const locations = getLocationsFromProductsChanges();
-    console.log(`Found ${locations.length} unique locations: ${locations.map(l => `${l.name} (${l.id})`).join(', ')}`);
+    // Get all items from products-changes.json
+    const items = getItemsFromProductsChanges();
+    console.log(`Found ${items.length} items to process`);
 
     // Create screenshot directory if it doesn't exist
     const screenshotDir = path.resolve(__dirname, '../../result/screenshot');
@@ -76,11 +141,24 @@ test.describe('BJs Menu Page', () => {
       console.log(`Created screenshot directory: ${screenshotDir}`);
     }
 
-    // Test each location with a new browser context/page
-    for (const location of locations) {
-      console.log(`\nTesting location: ${location.name} (ID: ${location.id})`);
+    // Test each item with a new browser context/page
+    for (const item of items) {
+      const { change, changeType, locationParsed } = item;
       
-      // Create a new browser context for this location
+      // Get supported order types for this item
+      const availableOrderTypes = getAvailableOrderTypes(change);
+      
+      // Skip if no order types are available
+      if (availableOrderTypes.length === 0) {
+        console.log(`\nSkipping ${changeType} item - Location: ${locationParsed.name} (ID: ${locationParsed.id}) - No supported order types`);
+        continue;
+      }
+      
+      // Use the first supported order type
+      const orderType = availableOrderTypes[0];
+      console.log(`\nProcessing ${changeType} item - Location: ${locationParsed.name} (ID: ${locationParsed.id}) - Order Type: ${orderType} (Available: ${availableOrderTypes.join(', ')})`);
+      
+      // Create a new browser context for this item
       const context = await browser.newContext({
         permissions: ['geolocation'],
         viewport: null,
@@ -89,13 +167,27 @@ test.describe('BJs Menu Page', () => {
       
       try {
         // Navigate to find location page, search for location, and select by ID
-        await navigateToFindLocationPage(page, location.name, location.id, "dinein");
+        await navigateToFindLocationPage(page, locationParsed.name, locationParsed.id, orderType);
 
         // Wait a bit for the second list to fully render
         await page.waitForTimeout(2000);
+        
+        // For added items, wait for the <a> tag containing the product name
+        if (changeType === 'added' && change.friday.productParsed?.name) {
+          const productName = change.friday.productParsed.name;
+          console.log(`Waiting for <a> tag containing product name: "${productName}"...`);
+          
+          const productLink = page
+            .locator('a')
+            .filter({ has: page.getByText(productName) })
+            .first();
+          
+          await productLink.waitFor({ state: 'visible', timeout: 30000 });
+          console.log(`Found <a> tag containing product name: "${productName}"`);
+        }
 
-        // Take a screenshot for this location
-        const screenshotFilename = `menu-page-${location.name.replace(/\s+/g, '-')}.png`;
+        // Take a screenshot for this item
+        const screenshotFilename = `menu-page-${changeType}-${locationParsed.name.replace(/\s+/g, '-')}-${Date.now()}.png`;
         const screenshotPath = path.join(screenshotDir, screenshotFilename);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`Screenshot saved: ${screenshotPath}`);
@@ -104,7 +196,7 @@ test.describe('BJs Menu Page', () => {
         const baseUrl = config.bjsWebUrl.replace(/\/$/, '');
         expect(page.url()).toContain(baseUrl);
       } finally {
-        // Close the page and context for this location
+        // Close the page and context for this item
         await page.close();
         await context.close();
       }

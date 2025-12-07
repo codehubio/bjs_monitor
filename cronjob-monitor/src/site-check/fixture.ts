@@ -189,6 +189,7 @@ export async function waitForFindLocationPageAndSearchInput(
   // Wait for the search input to appear
   console.log('Waiting for search input to appear...');
   const searchInput = page.getByTestId('search-input');
+  await page.waitForTimeout(5000);
   await searchInput.waitFor({ state: 'visible', timeout: 30000 });
   console.log('Search input appeared');
 
