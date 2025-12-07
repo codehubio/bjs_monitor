@@ -162,7 +162,9 @@ test.describe('BJs Menu Page', () => {
       
       // Use the first supported order type
       const orderType = availableOrderTypes[0];
-      console.log(`\nProcessing ${changeType} item - Location: ${locationParsed.name} (ID: ${locationParsed.id}) - Order Type: ${orderType} (Available: ${availableOrderTypes.join(', ')})`);
+      
+      // Output item details before proceeding (one line)
+      console.log(`\nProcessing ${changeType} | Location ID: ${locationParsed.id} | Location Name: ${locationParsed.name} | Category ID: ${change.after.categoryParsed?.id || 'N/A'} | Category Name: ${change.after.categoryParsed?.name || 'N/A'} | Item ID: ${change.after.productParsed?.id || 'N/A'} | Item Name: ${change.after.productParsed?.name || 'N/A'} | Order Type: ${orderType}`);
       
       // Create a new browser context for this item
       const context = await browser.newContext({
