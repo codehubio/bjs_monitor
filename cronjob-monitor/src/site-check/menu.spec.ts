@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import { config } from '../config';
-import { navigateToFindLocationPage } from './fixture';
+import { waitForFindLocationPageAndSearchInputAndSelectOrderType } from './fixture';
 import { ProductChange } from '../types';
 import { uploadScreenshotsAndSendToMsTeams } from '../util/sendToMsTeam';
 
@@ -155,7 +155,7 @@ test.describe('BJs Menu Page', () => {
     }> = [];
 
     // Test each item with a new browser context/page
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const { change, changeType, locationParsed } = item;
       
@@ -189,7 +189,7 @@ test.describe('BJs Menu Page', () => {
       
       try {
         // Navigate to find location page, search for location, and select by ID
-        await navigateToFindLocationPage(page, locationParsed.name, locationParsed.id, orderType);
+        await waitForFindLocationPageAndSearchInputAndSelectOrderType(page, locationParsed.name, locationParsed.id, orderType);
 
         // Wait a bit for the second list to fully render
         await page.waitForTimeout(2000);
@@ -221,7 +221,7 @@ test.describe('BJs Menu Page', () => {
               
               // Wait for 5 seconds
               console.log('Waiting 5 seconds for potential age confirmation dialog...');
-              await page.waitForTimeout(3000);
+              await page.waitForTimeout(5000);
               
               // Check if age confirmation dialog appears
               const ageConfirmationButton = page

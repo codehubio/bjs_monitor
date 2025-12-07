@@ -169,10 +169,11 @@ export function buildLocationUrl(): string {
 
 /**
  * Search for location and select it by clicking "Choose location" button
+ * Uses recursion to try each button index until the desired location is found
  * @param page Playwright page object
  * @param searchingSiteName Site name to search for
  * @param locationId Location ID to select (from locationParsed.id)
- * @param buttonIndex Button index to try (0-based)
+ * @param buttonIndex Button index to try (0-based), defaults to 0
  * @returns Promise that resolves to true if location was found and selected, false otherwise
  */
 export async function searchAndSelectLocation(
@@ -231,15 +232,18 @@ export async function searchAndSelectLocation(
     return false;
   }
 
+  // Check if buttonIndex is out of range
   if (buttonIndex >= buttonCount) {
     console.warn(`Button index ${buttonIndex} is out of range (max: ${buttonCount - 1})`);
     return false;
   }
 
-  // Get the button at the specified index
+  console.log(`\nAttempt ${buttonIndex + 1}: Trying button index ${buttonIndex}...`);
+
+  // Get the button at the current index
   const locationButton = locationButtons.nth(buttonIndex);
   await locationButton.waitFor({ state: 'visible', timeout: 30000 });
-  console.log(`Found button ${buttonIndex + 1} of ${buttonCount} containing "${searchingSiteName}"`);
+  console.log(`Found button ${buttonIndex + 1} of ${buttonCount}`);
 
   // Click the button
   console.log(`Clicking location button ${buttonIndex + 1}...`);
@@ -254,7 +258,6 @@ export async function searchAndSelectLocation(
   });
 
   // Wait for a new ul list to appear after clicking the first item
-  // The ul has many li, and one li (or its direct/indirect children) has the site name in the text
   console.log('Waiting for new location list to appear after clicking first item...');
   
   // Wait for a ul that contains an li with the site name
@@ -300,39 +303,30 @@ export async function searchAndSelectLocation(
       console.log('Waiting for new page to appear (3 seconds)...');
       await page.waitForTimeout(3000);
       
+      console.log(`Successfully found and selected location with id="${locationId}" using button ${buttonIndex + 1}`);
       return true; // Successfully found and clicked
     } catch (error) {
-      console.warn(`Li with id="${locationId}" not found in new location list`);
-      return false; // Not found, need to try next button
+      console.warn(`Li with id="${locationId}" not found in new location list for button ${buttonIndex + 1}`);
+      // Recursively try the next button index
+      return await searchAndSelectLocation(page, searchingSiteName, locationId, buttonIndex + 1);
     }
   } catch (error) {
     console.warn(`New location list did not appear after clicking button ${buttonIndex + 1}`);
-    return false; // Not found, need to try next button
+    // Recursively try the next button index
+    return await searchAndSelectLocation(page, searchingSiteName, locationId, buttonIndex + 1);
   }
 }
 
 /**
- * Navigate to find location page and enter search text
+ * Navigate to location page and select order type
  * @param page Playwright page object
- * @param searchingSiteName Site name to search for
- * @param locationId Location ID to select (from locationParsed.id)
- * @param buttonIndex Button index to try (0-based)
  * @param orderType Order type: 'takeout', 'delivery', or 'dinein'
+ * @returns Promise that resolves when order type is selected
  */
-export async function waitForFindLocationPageAndSearchInput(
+export async function selectOrderType(
   page: Page,
-  searchingSiteName: string,
-  locationId: string,
-  buttonIndex: number = 0,
   orderType?: 'takeout' | 'delivery' | 'dinein'
-): Promise<boolean> {
-  // Use the extracted function to search and select location
-  const locationSelected = await searchAndSelectLocation(page, searchingSiteName, locationId, buttonIndex);
-  
-  if (!locationSelected) {
-    return false;
-  }
-  
+): Promise<void> {
   // Navigate to BJs_Location_Path
   const locationUrl = buildLocationUrl();
   console.log(`Navigating to location URL: ${locationUrl}`);
@@ -395,45 +389,31 @@ export async function waitForFindLocationPageAndSearchInput(
       console.log(`Input with placeholder "${placeholderText}" not found:`, error);
     }
   }
-  
-  return true; // Successfully found and clicked
 }
 
 /**
- * Complete flow: Navigate to find location page and enter search text
- * Tries each button until secondListItem is found
+ * Navigate to find location page and enter search text
  * @param page Playwright page object
- * @param searchingSiteName Site name to search for in the search input
+ * @param searchingSiteName Site name to search for
  * @param locationId Location ID to select (from locationParsed.id)
  * @param orderType Order type: 'takeout', 'delivery', or 'dinein'
  */
-export async function navigateToFindLocationPage(
+export async function waitForFindLocationPageAndSearchInputAndSelectOrderType(
   page: Page,
   searchingSiteName: string,
   locationId: string,
   orderType?: 'takeout' | 'delivery' | 'dinein'
-): Promise<void> {
-  // Try each button until we find the one that leads to the correct secondListItem
-  let buttonIndex = 0;
-  let found = false;
+): Promise<boolean> {
+  // Use the extracted function to search and select location (starts with buttonIndex 0)
+  const locationSelected = await searchAndSelectLocation(page, searchingSiteName, locationId, 0);
   
-  while (!found) {
-    console.log(`\nAttempt ${buttonIndex + 1}: Trying button index ${buttonIndex}...`);
-    found = await waitForFindLocationPageAndSearchInput(page, searchingSiteName, locationId, buttonIndex, orderType);
-    
-    if (found) {
-      console.log(`Successfully found and selected location with id="${locationId}" using button ${buttonIndex + 1}`);
-      break;
-    }
-    
-    buttonIndex++;
-    console.log(`Button ${buttonIndex} did not lead to correct location, trying next button...`);
-    
-    // Safety check to avoid infinite loop
-    if (buttonIndex > 10) {
-      console.warn(`Tried ${buttonIndex} buttons but could not find location with id="${locationId}", giving up`);
-      throw new Error(`Could not find location with id="${locationId}" after trying ${buttonIndex} buttons`);
-    }
+  if (!locationSelected) {
+    return false;
   }
+  
+  // Use the extracted function to select order type
+  await selectOrderType(page, orderType);
+  
+  return true; // Successfully found and clicked
 }
 
