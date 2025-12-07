@@ -29,7 +29,7 @@ export async function handleTakeoutOrderType(page: Page): Promise<void> {
   console.log('Button found in DOM, waiting for React state to update...');
   
   // Wait a bit for React state to update
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(3000);
   
   // Try clicking via JavaScript to bypass Playwright's actionability checks
   console.log('Attempting to click button via JavaScript...');
@@ -85,7 +85,7 @@ export async function handleDeliveryOrderType(page: Page): Promise<void> {
   console.log('Button found in DOM, waiting for React state to update...');
   
   // Wait a bit for React state to update
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(3000);
   
   // Try clicking via JavaScript to bypass Playwright's actionability checks
   console.log('Attempting to click button via JavaScript...');
@@ -106,7 +106,7 @@ export async function handleDineInOrderType(page: Page): Promise<void> {
   console.log('Waiting for button with text "Order Ahead" and id containing "tabs"...');
   const orderAheadButton = page
     .locator('button[id*="tabs"]')
-    .filter({ has: page.getByText("Order Ahead") })
+    .filter({ has: page.getByText("Order ahead") })
     .first();
   
   // Wait for the button to be attached to the DOM
@@ -123,11 +123,12 @@ export async function handleDineInOrderType(page: Page): Promise<void> {
   console.log('Clicked "Order Ahead" button');
 
   // Wait for the "2nd Order ahead" button to appear and React state to update
-  console.log('Waiting for button with text "Start my order"...');
+  console.log('Waiting for button with text "Order ahead" (id must not contain "tabs")...');
   
   // Wait for the button to be attached to the DOM
+  // Exclude buttons whose id contains "tabs"
   const SecondOrderAheaButton = page
-    .locator('button')
+    .locator('button:not([id*="tabs"])')
     .filter({ has: page.getByText("Order ahead") })
     .first();
   
@@ -135,7 +136,7 @@ export async function handleDineInOrderType(page: Page): Promise<void> {
   console.log('Button found in DOM, waiting for React state to update...');
   
   // Wait a bit for React state to update
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(5000);
   
   // Try clicking via JavaScript to bypass Playwright's actionability checks
   console.log('Attempting to click button via JavaScript...');
@@ -323,6 +324,7 @@ export async function waitForFindLocationPageAndSearchInput(
             console.log(`Clicking input with placeholder "${placeholderText}"...`);
             // Try clicking with force option in case the element is covered
             await inputElement.click({ force: true });
+            await page.waitForTimeout(1000);
             console.log(`Clicked input with placeholder "${placeholderText}"`);
              // Click on the button with text "Order <mapped_value>" (case insensitive)
              const orderButtonText = `Order ${orderTypeText}`;
@@ -354,8 +356,8 @@ export async function waitForFindLocationPageAndSearchInput(
                 await handleDineInOrderType(page);
                 break;
             }
-            await page.goto(config.bjsMenuPath);
-            await page.waitForTimeout(5000);
+            // await page.goto(config.bjsMenuPath);
+            // await page.waitForTimeout(5000);
           } catch (error) {
             console.log(error);
           }
