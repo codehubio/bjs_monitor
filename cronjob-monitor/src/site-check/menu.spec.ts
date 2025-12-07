@@ -150,6 +150,7 @@ test.describe('BJs Menu Page', () => {
       categoryName: string;
       productId: string;
       productName: string;
+      orderType: string;
       screenshotPath: string | null;
     }> = [];
 
@@ -295,6 +296,7 @@ test.describe('BJs Menu Page', () => {
           categoryName: change.after.categoryParsed?.name || 'N/A',
           productId: change.after.productParsed?.id || 'N/A',
           productName: change.after.productParsed?.name || 'N/A',
+          orderType: orderType,
           screenshotPath: screenshotPath,
         });
 

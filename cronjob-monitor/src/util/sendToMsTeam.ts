@@ -58,6 +58,7 @@ export function buildProductAdaptiveCard(
     categoryName: string;
     productId: string;
     productName: string;
+    orderType: string;
     screenshotUrl: string | 'Not found';
   }>
 ) {
@@ -80,6 +81,7 @@ export function buildProductAdaptiveCard(
       buildTableCell(`${row.locationId}: ${row.locationName}`),
       buildTableCell(`${row.categoryId}: ${row.categoryName}`),
       buildTableCell(`${row.productId}: ${row.productName}`),
+      buildTableCell(row.orderType),
       // Show "Not found" as text if screenshotUrl is "Not found", otherwise show as image
       row.screenshotUrl === 'Not found' 
         ? buildTableCell('Not found')
@@ -94,6 +96,7 @@ export function buildProductAdaptiveCard(
       'Location',
       'Category',
       'Product',
+      'Order Type',
       'Screenshot'
     ].map((headerText) => ({
       type: "TableCell",
@@ -110,12 +113,13 @@ export function buildProductAdaptiveCard(
     style: "accent",
   };
 
-  // Calculate column widths (4 columns)
+  // Calculate column widths (5 columns)
   const columns = [
     { width: 10 },  // Location
-    { width: 20 },  // Category
-    { width: 20 },  // Product
-    { width: 50 },  // Screenshot
+    { width: 15 },  // Category
+    { width: 15 },  // Product
+    { width: 15 },  // Order Type
+    { width: 45 },  // Screenshot
   ];
 
   // Add table to body
@@ -216,6 +220,7 @@ export async function uploadScreenshotsAndSendToMsTeams(
     categoryName: string;
     productId: string;
     productName: string;
+    orderType: string;
     screenshotPath: string | null;
   }>,
   webhookUrl?: string
@@ -233,6 +238,7 @@ export async function uploadScreenshotsAndSendToMsTeams(
         categoryName: item.categoryName,
         productId: item.productId,
         productName: item.productName,
+        orderType: item.orderType,
         screenshotUrl,
       };
     })
