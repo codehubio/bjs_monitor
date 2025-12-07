@@ -223,6 +223,10 @@ test.describe('BJs Menu Page', () => {
                 // Dialog didn't appear, which is fine
                 console.log('No age confirmation dialog appeared');
               }
+               // Scroll down and wait
+               console.log('Scrolling down...');
+               await page.keyboard.press('PageDown');
+               await page.waitForTimeout(2000);
             } else {
               console.warn(`No href found on <a> tag containing product name: "${productName}"`);
             }

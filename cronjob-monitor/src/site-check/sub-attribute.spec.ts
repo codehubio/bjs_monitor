@@ -219,11 +219,16 @@ test.describe('BJs Sub-Attributes Page', () => {
                 console.log('Clicked "YES, I AM" button');
                 await ageConfirmationButton.waitFor({ state: 'visible', timeout: 3000 });
                 await page.waitForTimeout(3000);
+             
               } catch (error) {
                 // Dialog didn't appear, which is fine
                 console.log('No age confirmation dialog appeared');
               }
-              
+                 
+                // Scroll down and wait
+                console.log('Scrolling down...');
+                await page.keyboard.press('PageDown');
+                await page.waitForTimeout(2000);
               // Search for label with attributesParsed.name and click input inside it
               if (change.after.attributesParsed?.name) {
                 const attributesName = change.after.attributesParsed.name;
@@ -244,7 +249,7 @@ test.describe('BJs Sub-Attributes Page', () => {
                   console.log(`Found input inside label with attributes name: "${attributesName}"`);
                   await attributesInput.click({force: true});
                   console.log(`Clicked input inside label with attributes name: "${attributesName}"`);
-                  await page.waitForTimeout(1000);
+                  await page.waitForTimeout(3000);
                 } catch (error) {
                   console.warn(`Label with attributes name "${attributesName}" or input inside it not found`);
                 }
@@ -290,7 +295,7 @@ test.describe('BJs Sub-Attributes Page', () => {
           screenshotPath = path.join(screenshotDir, screenshotFilename);
           
           console.log(`Screenshot filename: ${screenshotFilename}`);
-          await page.screenshot({ path: screenshotPath, fullPage: true });
+          await page.screenshot({ path: screenshotPath, fullPage: false });
           console.log(`Screenshot saved: ${screenshotPath}`);
         } else {
           console.log('Skipping screenshot since product link was not found');
