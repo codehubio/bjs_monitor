@@ -16,7 +16,27 @@ export const ORDER_TYPE_TEXT_MAP: Record<'takeout' | 'delivery' | 'dinein', stri
  */
 export async function handleTakeoutOrderType(page: Page): Promise<void> {
   // TODO: Implement takeout-specific UI handling
-  console.log('Handling takeout order type...');
+  // Wait for the "Start my order" button to appear and React state to update
+  console.log('Waiting for button with text "Start my order"...');
+  
+  // Wait for the button to be attached to the DOM
+  const startOrderButton = page
+    .locator('button')
+    .filter({ has: page.getByText(/start my order/i) })
+    .first();
+  
+  await startOrderButton.waitFor({ state: 'attached', timeout: 30000 });
+  console.log('Button found in DOM, waiting for React state to update...');
+  
+  // Wait a bit for React state to update
+  await page.waitForTimeout(2000);
+  
+  // Try clicking via JavaScript to bypass Playwright's actionability checks
+  console.log('Attempting to click button via JavaScript...');
+  await startOrderButton.evaluate((button: any) => {
+    button.click();
+  });
+  console.log('Clicked "Start my order" button via JavaScript');
 }
 
 /**
@@ -80,8 +100,50 @@ export async function handleDeliveryOrderType(page: Page): Promise<void> {
  * @param page Playwright page object
  */
 export async function handleDineInOrderType(page: Page): Promise<void> {
-  // TODO: Implement dine-in-specific UI handling
   console.log('Handling dine-in order type...');
+  
+  // Wait for the button with "Order Ahead" text to appear
+  console.log('Waiting for button with text "Order Ahead" and id containing "tabs"...');
+  const orderAheadButton = page
+    .locator('button[id*="tabs"]')
+    .filter({ has: page.getByText("Order Ahead") })
+    .first();
+  
+  // Wait for the button to be attached to the DOM
+  await orderAheadButton.waitFor({ state: 'attached', timeout: 30000 });
+  console.log('Found button with text "Order Ahead"');
+  
+  // Wait for the button to be visible
+  await orderAheadButton.waitFor({ state: 'visible', timeout: 30000 });
+  console.log('Button is visible');
+  
+  // Click the "Order Ahead" button
+  console.log('Clicking "Order Ahead" button...');
+  await orderAheadButton.click();
+  console.log('Clicked "Order Ahead" button');
+
+  // Wait for the "2nd Order ahead" button to appear and React state to update
+  console.log('Waiting for button with text "Start my order"...');
+  
+  // Wait for the button to be attached to the DOM
+  const SecondOrderAheaButton = page
+    .locator('button')
+    .filter({ has: page.getByText("Order ahead") })
+    .first();
+  
+  await SecondOrderAheaButton.waitFor({ state: 'attached', timeout: 30000 });
+  console.log('Button found in DOM, waiting for React state to update...');
+  
+  // Wait a bit for React state to update
+  await page.waitForTimeout(2000);
+  
+  // Try clicking via JavaScript to bypass Playwright's actionability checks
+  console.log('Attempting to click button via JavaScript...');
+  await SecondOrderAheaButton.evaluate((button: any) => {
+    button.click();
+  });
+  console.log('Clicked "SecondOrder ahead" button via JavaScript');
+  
 }
 
 /**
