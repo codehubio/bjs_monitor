@@ -184,7 +184,7 @@ export async function waitForFindLocationPageAndSearchInput(
   // Navigate directly to the find location page
   const findLocationUrl = buildFindLocationUrl();
   console.log(`Navigating to find location URL: ${findLocationUrl}`);
-  await page.goto(findLocationUrl);
+  await page.goto(findLocationUrl, {waitUntil: 'domcontentloaded'});
 
   // Wait for the search input to appear
   console.log('Waiting for search input to appear...');
@@ -304,7 +304,7 @@ export async function waitForFindLocationPageAndSearchInput(
         console.log(`Navigating to location URL: ${locationUrl}`);
         await page.goto(locationUrl);
         console.log('Navigated to location page');
-        
+        page.waitForTimeout(5000);
         // If orderType is provided, find the input with placeholder matching the order type
         if (orderType) {
           const orderTypeText = ORDER_TYPE_TEXT_MAP[orderType];
@@ -353,7 +353,8 @@ export async function waitForFindLocationPageAndSearchInput(
                 await handleDineInOrderType(page);
                 break;
             }
-            
+            await page.goto(config.bjsMenuPath);
+            await page.waitForTimeout(5000);
           } catch (error) {
             console.log(error);
           }
