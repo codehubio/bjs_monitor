@@ -6,21 +6,21 @@ import { ProductChange } from '../types';
  * Format product change for display
  */
 export function formatProductChange(change: ProductChange): string {
-  const thursday = change.thursday;
-  const friday = change.friday;
+  const before = change.before;
+  const after = change.after;
   
   switch (change.changeType) {
     case 'added':
-      return `[ADDED] ${friday.location} | ${friday.category} | ${friday.product}`;
+      return `[ADDED] ${after.location} | ${after.category} | ${after.product}`;
     
     case 'removed':
-      return `[REMOVED] ${thursday.location} | ${thursday.category} | ${thursday.product}`;
+      return `[REMOVED] ${before.location} | ${before.category} | ${before.product}`;
     
     case 'moved':
-      return `[MOVED] ${thursday.product}\n  From: ${thursday.location} | ${thursday.category}\n  To: ${friday.location} | ${friday.category}`;
+      return `[MOVED] ${before.product}\n  From: ${before.location} | ${before.category}\n  To: ${after.location} | ${after.category}`;
     
     case 'modified':
-      return `[MODIFIED] ${thursday.location} | ${thursday.category}\n  Thursday: ${thursday.product}\n  Friday: ${friday.product}`;
+      return `[MODIFIED] ${before.location} | ${before.category}\n  Before: ${before.product}\n  After: ${after.product}`;
     
     default:
       return JSON.stringify(change);

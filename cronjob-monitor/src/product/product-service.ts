@@ -10,31 +10,31 @@ function isProductEmpty(product: string): boolean {
 }
 
 /**
- * Determine the type of change between Thursday and Friday entries
+ * Determine the type of change between before and after entries
  */
 function determineChangeType(row: ProductRow): ProductChange['changeType'] {
-  const thursdayHasProduct = !isProductEmpty(row.thursdayProduct);
-  const fridayHasProduct = !isProductEmpty(row.fridayProduct);
+  const beforeHasProduct = !isProductEmpty(row.beforeProduct);
+  const afterHasProduct = !isProductEmpty(row.afterProduct);
   
-  // Product was added (Thursday has no product, Friday has product)
-  if (!thursdayHasProduct && fridayHasProduct) {
+  // Product was added (before has no product, after has product)
+  if (!beforeHasProduct && afterHasProduct) {
     return 'added';
   }
   
-  // Product was removed (Thursday has product, Friday has no product)
-  if (thursdayHasProduct && !fridayHasProduct) {
+  // Product was removed (before has product, after has no product)
+  if (beforeHasProduct && !afterHasProduct) {
     return 'removed';
   }
   
   // Both have products - check for changes
-  if (thursdayHasProduct && fridayHasProduct) {
+  if (beforeHasProduct && afterHasProduct) {
     // Check if location or category changed (product moved to different location/category)
     if (
-      row.thursdayLocation !== row.fridayLocation ||
-      row.thursdayCategory !== row.fridayCategory
+      row.beforeLocation !== row.afterLocation ||
+      row.beforeCategory !== row.afterCategory
     ) {
       return 'moved';
-    } else if (row.thursdayProduct !== row.fridayProduct) {
+    } else if (row.beforeProduct !== row.afterProduct) {
       // Same location/category but different product ID
       return 'modified';
     }
@@ -62,21 +62,21 @@ export function processProductChanges(rows: ProductRow[]): {
   
   for (const row of rows) {
     const change: ProductChange = {
-      thursday: {
-        location: row.thursdayLocation,
-        category: row.thursdayCategory,
-        product: row.thursdayProduct,
-        locationParsed: parseField(row.thursdayLocation),
-        categoryParsed: parseField(row.thursdayCategory),
-        productParsed: parseField(row.thursdayProduct)
+      before: {
+        location: row.beforeLocation,
+        category: row.beforeCategory,
+        product: row.beforeProduct,
+        locationParsed: parseField(row.beforeLocation),
+        categoryParsed: parseField(row.beforeCategory),
+        productParsed: parseField(row.beforeProduct)
       },
-      friday: {
-        location: row.fridayLocation,
-        category: row.fridayCategory,
-        product: row.fridayProduct,
-        locationParsed: parseField(row.fridayLocation),
-        categoryParsed: parseField(row.fridayCategory),
-        productParsed: parseField(row.fridayProduct)
+      after: {
+        location: row.afterLocation,
+        category: row.afterCategory,
+        product: row.afterProduct,
+        locationParsed: parseField(row.afterLocation),
+        categoryParsed: parseField(row.afterCategory),
+        productParsed: parseField(row.afterProduct)
       },
       changeType: determineChangeType(row)
     };

@@ -12,8 +12,9 @@ export function parseProductsCSV(filePath: string): ProductRow[] {
   
   // Parse CSV using csv-parse
   // Skip the first two header rows (from_line: 3 means start from line 3, 1-indexed)
-  // Row 1: "Thursday,,,Friday,,"
+  // Row 1: Header row (e.g., "Thursday,,,Friday,," or similar)
   // Row 2: "Location,Category,Product,Location,Category,Product"
+  // Left columns (0-2) are "before", right columns (3-5) are "after"
   const records = parse(content, {
     from_line: 3, // Start from line 3 (skip first 2 header rows)
     skip_empty_lines: true,
@@ -26,14 +27,15 @@ export function parseProductsCSV(filePath: string): ProductRow[] {
   
   for (const record of records) {
     // Ensure we have at least 6 columns
+    // Left columns (0-2) are "before", right columns (3-5) are "after"
     if (record && record.length >= 6) {
       rows.push({
-        thursdayLocation: record[0] || '',
-        thursdayCategory: record[1] || '',
-        thursdayProduct: record[2] || '',
-        fridayLocation: record[3] || '',
-        fridayCategory: record[4] || '',
-        fridayProduct: record[5] || ''
+        beforeLocation: record[0] || '',
+        beforeCategory: record[1] || '',
+        beforeProduct: record[2] || '',
+        afterLocation: record[3] || '',
+        afterCategory: record[4] || '',
+        afterProduct: record[5] || ''
       });
     }
   }

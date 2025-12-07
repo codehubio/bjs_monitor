@@ -20,13 +20,13 @@ export async function enrichAddedProductsWithMenuItems(
     // Only enrich if it's an added product with valid parsed IDs
     if (
       change.changeType === 'added' &&
-      change.friday.productParsed?.id &&
-      change.friday.locationParsed?.id &&
-      change.friday.categoryParsed?.id
+      change.after.productParsed?.id &&
+      change.after.locationParsed?.id &&
+      change.after.categoryParsed?.id
     ) {
-      const siteId = change.friday.locationParsed.id;
-      const categoryId = change.friday.categoryParsed.id;
-      const productId = change.friday.productParsed.id;
+      const siteId = change.after.locationParsed.id;
+      const categoryId = change.after.categoryParsed.id;
+      const productId = change.after.productParsed.id;
       const cacheKey = `${siteId}-${categoryId}`;
       
       try {

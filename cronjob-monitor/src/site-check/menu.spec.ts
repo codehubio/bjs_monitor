@@ -69,57 +69,57 @@ function getItemsFromProductsChanges(): Array<{
     locationParsed: { name: string; id: string };
   }> = [];
 
-  // Get items from added changes (use friday location)
+  // Get items from added changes (use after location)
   data.changes.added.forEach(change => {
-    if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
+    if (change.after.locationParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
         changeType: 'added',
         locationParsed: {
-          name: change.friday.locationParsed.name,
-          id: change.friday.locationParsed.id
+          name: change.after.locationParsed.name,
+          id: change.after.locationParsed.id
         }
       });
     }
   });
 
-  // Get items from removed changes (use thursday location)
+  // Get items from removed changes (use before location)
   data.changes.removed.forEach(change => {
-    if (change.thursday.locationParsed?.name && change.thursday.locationParsed?.id) {
+    if (change.before.locationParsed?.name && change.before.locationParsed?.id) {
       items.push({
         change,
         changeType: 'removed',
         locationParsed: {
-          name: change.thursday.locationParsed.name,
-          id: change.thursday.locationParsed.id
+          name: change.before.locationParsed.name,
+          id: change.before.locationParsed.id
         }
       });
     }
   });
 
-  // Get items from modified changes (use friday location)
+  // Get items from modified changes (use after location)
   data.changes.modified.forEach(change => {
-    if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
+    if (change.after.locationParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
         changeType: 'modified',
         locationParsed: {
-          name: change.friday.locationParsed.name,
-          id: change.friday.locationParsed.id
+          name: change.after.locationParsed.name,
+          id: change.after.locationParsed.id
         }
       });
     }
   });
 
-  // Get items from moved changes (use friday location)
+  // Get items from moved changes (use after location)
   data.changes.moved.forEach(change => {
-    if (change.friday.locationParsed?.name && change.friday.locationParsed?.id) {
+    if (change.after.locationParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
         changeType: 'moved',
         locationParsed: {
-          name: change.friday.locationParsed.name,
-          id: change.friday.locationParsed.id
+          name: change.after.locationParsed.name,
+          id: change.after.locationParsed.id
         }
       });
     }
@@ -173,8 +173,8 @@ test.describe('BJs Menu Page', () => {
         await page.waitForTimeout(2000);
         
         // For added items, wait for the <a> tag containing the product name
-        if (changeType === 'added' && change.friday.productParsed?.name) {
-          const productName = change.friday.productParsed.name;
+        if (changeType === 'added' && change.after.productParsed?.name) {
+          const productName = change.after.productParsed.name;
           console.log(`Waiting for <a> tag containing product name: "${productName}"...`);
           
           const productLink = page

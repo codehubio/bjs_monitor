@@ -8,7 +8,7 @@ export interface ParsedField {
 }
 
 /**
- * Product entry for a specific day (Thursday or Friday)
+ * Product entry for a specific time period (before or after)
  */
 export interface ProductEntry {
   location: string;
@@ -34,24 +34,25 @@ export interface MenuItemInfo {
 }
 
 /**
- * Product change record comparing Thursday and Friday
+ * Product change record comparing before and after states
  */
 export interface ProductChange {
-  thursday: ProductEntry;
-  friday: ProductEntry;
+  before: ProductEntry;
+  after: ProductEntry;
   changeType: 'added' | 'removed' | 'modified' | 'moved';
   menuItemInfo?: MenuItemInfo; // Menu item details for added products
 }
 
 /**
  * Parsed CSV row data
+ * Left columns (0-2) are "before", right columns (3-5) are "after"
  */
 export interface ProductRow {
-  thursdayLocation: string;
-  thursdayCategory: string;
-  thursdayProduct: string;
-  fridayLocation: string;
-  fridayCategory: string;
-  fridayProduct: string;
+  beforeLocation: string;
+  beforeCategory: string;
+  beforeProduct: string;
+  afterLocation: string;
+  afterCategory: string;
+  afterProduct: string;
 }
 
