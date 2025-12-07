@@ -330,7 +330,7 @@ export async function selectOrderType(
   // Navigate to BJs_Location_Path
   const locationUrl = buildLocationUrl();
   console.log(`Navigating to location URL: ${locationUrl}`);
-  await page.goto(locationUrl);
+  await page.goto(locationUrl, {waitUntil: 'domcontentloaded'});
   console.log('Navigated to location page');
   await page.waitForTimeout(5000);
   
