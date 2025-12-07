@@ -11,11 +11,27 @@ export function buildS3BaseUrl(
   prefix: string,
   filename?: string
 ): string {
-  // Build the full prefix: s3Prefix/customPrefix or just customPrefix if s3Prefix is empty
-  let fullPath = `${s3Prefix}/${prefix}`;
+  // Build the full path, handling empty s3Prefix and/or prefix
+  let fullPath = '';
   
+  if (s3Prefix && prefix) {
+    // Both s3Prefix and prefix are non-empty
+    fullPath = `${s3Prefix}/${prefix}`;
+  } else if (s3Prefix) {
+    // Only s3Prefix is non-empty
+    fullPath = s3Prefix;
+  } else if (prefix) {
+    // Only prefix is non-empty
+    fullPath = prefix;
+  }
+  
+  // Add filename if provided
   if (filename) {
-    fullPath = `${fullPath}/${filename}`;
+    if (fullPath) {
+      fullPath = `${fullPath}/${filename}`;
+    } else {
+      fullPath = filename;
+    }
   }
   
   // Build public S3 URL for screenshots using BASE_S3_URL from .env
@@ -171,7 +187,9 @@ export async function uploadFileToS3(filePath: string, s3Key?: string): Promise<
   // Build and return S3 URL using buildS3BaseUrl
   // buildS3BaseUrl constructs: s3Prefix/prefix/filename
   // If prefix is empty, it constructs: s3Prefix//filename (double slash, but that's handled by the function)
-  return buildS3BaseUrl(normalizedS3Prefix, urlPrefix, urlFilename);
+  const url = buildS3BaseUrl(normalizedS3Prefix, urlPrefix, urlFilename);
+  console.log(`S3 URL: ${url}`);
+  return url;
 }
 
 /**

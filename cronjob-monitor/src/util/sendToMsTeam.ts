@@ -77,12 +77,9 @@ export function buildProductAdaptiveCard(
   const rows = data.map((row) => ({
     type: "TableRow",
     cells: [
-      buildTableCell(row.locationId),
-      buildTableCell(row.locationName),
-      buildTableCell(row.categoryId),
-      buildTableCell(row.categoryName),
-      buildTableCell(row.productId),
-      buildTableCell(row.productName),
+      buildTableCell(`${row.locationId}: ${row.locationName}`),
+      buildTableCell(`${row.categoryId}: ${row.categoryName}`),
+      buildTableCell(`${row.productId}: ${row.productName}`),
       buildTableCell({ type: 'image', value: row.screenshotUrl }),
     ],
   }));
@@ -91,12 +88,9 @@ export function buildProductAdaptiveCard(
   const header = {
     type: "TableRow",
     cells: [
-      'Location ID',
-      'Location Name',
-      'Category ID',
-      'Category Name',
-      'Product ID',
-      'Product Name',
+      'Location',
+      'Category',
+      'Product',
       'Screenshot'
     ].map((headerText) => ({
       type: "TableCell",
@@ -113,8 +107,15 @@ export function buildProductAdaptiveCard(
     style: "accent",
   };
 
-  // Calculate column widths (7 columns)
-  const columns = Array(7).fill(null).map(() => ({ width: Math.floor(100 / 7) }));
+  // Calculate column widths (4 columns)
+  // First column (Location) is 50% of its original width (12.5% instead of 25%)
+  // Remaining width (87.5%) is distributed among the other 3 columns
+  const columns = [
+    { width: 10 },  // Location - reduced by 50%
+    { width: 20 }, // Category
+    { width: 20 }, // Product
+    { width: 50 }, // Screenshot
+  ];
 
   // Add table to body
   body.push({
