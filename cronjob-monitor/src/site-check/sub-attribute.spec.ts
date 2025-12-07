@@ -223,6 +223,32 @@ test.describe('BJs Sub-Attributes Page', () => {
                 // Dialog didn't appear, which is fine
                 console.log('No age confirmation dialog appeared');
               }
+              
+              // Search for label with attributesParsed.name and click input inside it
+              if (change.after.attributesParsed?.name) {
+                const attributesName = change.after.attributesParsed.name;
+                console.log(`Searching for label with attributes name: "${attributesName}"...`);
+                
+                const attributesLabel = page
+                  .locator('label')
+                  .filter({ has: page.getByText(attributesName) })
+                  .first();
+                
+                try {
+                  await attributesLabel.waitFor({ state: 'visible', timeout: 15000 });
+                  console.log(`Found label with attributes name: "${attributesName}"`);
+                  
+                  // Find input inside the label
+                  const attributesInput = attributesLabel.locator('input').first();
+                  await attributesInput.waitFor({ state: 'visible', timeout: 5000 });
+                  console.log(`Found input inside label with attributes name: "${attributesName}"`);
+                  await attributesInput.click({force: true});
+                  console.log(`Clicked input inside label with attributes name: "${attributesName}"`);
+                  await page.waitForTimeout(1000);
+                } catch (error) {
+                  console.warn(`Label with attributes name "${attributesName}" or input inside it not found`);
+                }
+              }
             } else {
               console.warn(`No href found on <a> tag containing product name: "${productName}"`);
             }
