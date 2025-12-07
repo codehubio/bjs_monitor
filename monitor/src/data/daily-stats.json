@@ -1382,5 +1382,70 @@
         "failed": 420
       }
     }
+  },
+  {
+    "date": "2025-12-05",
+    "eapi": {
+      "total": 185817,
+      "errors4xx": 18,
+      "errors5xx": 3,
+      "errorsOther": 3,
+      "httpErrors": [
+        {
+          "status": "401",
+          "count": 12
+        },
+        {
+          "status": "400",
+          "count": 4
+        },
+        {
+          "status": "0",
+          "count": 3
+        },
+        {
+          "status": "520",
+          "count": 3
+        },
+        {
+          "status": "404",
+          "count": 2
+        }
+      ]
+    },
+    "order": {
+      "success": 3431,
+      "failed": 9
+    },
+    "openCheck": {
+      "count": 139
+    },
+    "payment": {
+      "mobile": {
+        "success": 80,
+        "failed": 5
+      },
+      "desktop": {
+        "success": 3335,
+        "failed": 395
+      }
+    }
+  },
+  {
+    "date": "2025-12-07",
+    "eapi": {
+      "total": 0,
+      "errors4xx": 0,
+      "errors5xx": 0,
+      "errorsOther": 0,
+      "httpErrors": []
+    },
+    "order": {
+      "success": 0,
+      "failed": 0
+    },
+    "openCheck": {
+      "count": 0
+    }
   }
 ]

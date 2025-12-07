@@ -6,7 +6,42 @@ import { config } from '../config';
 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-
+export function buildS3BaseUrl(
+  s3Prefix: string,
+  prefix: string,
+  filename?: string
+): string {
+  // Build the full prefix: s3Prefix/customPrefix or just customPrefix if s3Prefix is empty
+  let fullPath = `${s3Prefix}/${prefix}`;
+  
+  if (filename) {
+    fullPath = `${fullPath}/${filename}`;
+  }
+  
+  // Build public S3 URL for screenshots using BASE_S3_URL from .env
+  if (config.baseS3Url) {
+    // Use BASE_S3_URL if provided, ensuring it ends with a slash
+    const baseUrl = config.baseS3Url.endsWith('/') ? config.baseS3Url : `${config.baseS3Url}/`;
+    return `${baseUrl}${fullPath}`;
+  }
+  
+  // Fallback to manual construction if BASE_S3_URL is not set
+  if (config.s3Endpoint) {
+    // Custom endpoint (e.g., MinIO, DigitalOcean Spaces)
+    if (config.s3ForcePathStyle) {
+      return `${config.s3Endpoint}/${config.s3Bucket}/${fullPath}`;
+    } else {
+      return `${config.s3Endpoint}/${fullPath}`;
+    }
+  }
+  
+  // Standard AWS S3
+  if (config.s3ForcePathStyle) {
+    return `https://s3.${config.awsRegion}.amazonaws.com/${config.s3Bucket}/${fullPath}`;
+  } else {
+    return `https://${config.s3Bucket}.s3.${config.awsRegion}.amazonaws.com/${fullPath}`;
+  }
+}
 /**
  * Upload a single file to S3 and return its URL
  * @param filePath Path to the file to upload
@@ -38,6 +73,41 @@ export async function uploadFileToS3(filePath: string, s3Key?: string): Promise<
   const fileName = path.basename(resolvedFilePath);
   const s3Prefix = config.s3Prefix || '';
   const finalS3Key = s3Key || (s3Prefix ? `${s3Prefix.replace(/\/$/, '')}/${fileName}` : fileName);
+  
+  // Extract prefix and filename from finalS3Key for buildS3BaseUrl
+  // buildS3BaseUrl expects: s3Prefix (from config), prefix (additional path), filename
+  // The finalS3Key might already include s3Prefix, so we need to extract the remaining part
+  let urlPrefix = '';
+  let urlFilename = fileName;
+  
+  // Normalize s3Prefix (remove trailing slash)
+  const normalizedS3Prefix = s3Prefix.replace(/\/$/, '');
+  
+  // Check if finalS3Key starts with s3Prefix
+  if (normalizedS3Prefix && finalS3Key.startsWith(normalizedS3Prefix + '/')) {
+    // Remove s3Prefix from the key to get the remaining path
+    const remainingKey = finalS3Key.substring(normalizedS3Prefix.length + 1);
+    const lastSlashIndex = remainingKey.lastIndexOf('/');
+    if (lastSlashIndex !== -1) {
+      urlPrefix = remainingKey.substring(0, lastSlashIndex);
+      urlFilename = remainingKey.substring(lastSlashIndex + 1);
+    } else {
+      // No prefix, just filename
+      urlPrefix = '';
+      urlFilename = remainingKey;
+    }
+  } else {
+    // finalS3Key doesn't start with s3Prefix, treat it as prefix+filename
+    const lastSlashIndex = finalS3Key.lastIndexOf('/');
+    if (lastSlashIndex !== -1) {
+      urlPrefix = finalS3Key.substring(0, lastSlashIndex);
+      urlFilename = finalS3Key.substring(lastSlashIndex + 1);
+    } else {
+      // No prefix, just filename
+      urlPrefix = '';
+      urlFilename = finalS3Key;
+    }
+  }
 
   // Initialize S3 client
   const s3ClientConfig: any = {
@@ -98,13 +168,10 @@ export async function uploadFileToS3(filePath: string, s3Key?: string): Promise<
     throw error;
   }
 
-  // Build and return S3 URL
-  if (config.baseS3Url) {
-    return `${config.baseS3Url}/${finalS3Key}`;
-  } else {
-    // Fallback to standard S3 URL format
-    return `https://${config.s3Bucket}.s3.${config.awsRegion}.amazonaws.com/${finalS3Key}`;
-  }
+  // Build and return S3 URL using buildS3BaseUrl
+  // buildS3BaseUrl constructs: s3Prefix/prefix/filename
+  // If prefix is empty, it constructs: s3Prefix//filename (double slash, but that's handled by the function)
+  return buildS3BaseUrl(normalizedS3Prefix, urlPrefix, urlFilename);
 }
 
 /**
