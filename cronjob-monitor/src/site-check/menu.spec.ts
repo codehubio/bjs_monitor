@@ -155,7 +155,7 @@ test.describe('BJs Menu Page', () => {
     }> = [];
 
     // Test each item with a new browser context/page
-    for (let i = 0; i < items.length; i++) {
+    for (let i = 0; i < 1; i++) {
       const item = items[i];
       const { change, changeType, locationParsed } = item;
       

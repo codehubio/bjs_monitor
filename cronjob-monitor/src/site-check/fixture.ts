@@ -168,19 +168,18 @@ export function buildLocationUrl(): string {
 }
 
 /**
- * Navigate to find location page and enter search text
+ * Search for location and select it by clicking "Choose location" button
  * @param page Playwright page object
  * @param searchingSiteName Site name to search for
  * @param locationId Location ID to select (from locationParsed.id)
  * @param buttonIndex Button index to try (0-based)
- * @param orderType Order type: 'takeout', 'delivery', or 'dinein'
+ * @returns Promise that resolves to true if location was found and selected, false otherwise
  */
-export async function waitForFindLocationPageAndSearchInput(
+export async function searchAndSelectLocation(
   page: Page,
   searchingSiteName: string,
   locationId: string,
-  buttonIndex: number = 0,
-  orderType?: 'takeout' | 'delivery' | 'dinein'
+  buttonIndex: number = 0
 ): Promise<boolean> {
   // Navigate directly to the find location page
   const findLocationUrl = buildFindLocationUrl();
@@ -293,77 +292,15 @@ export async function waitForFindLocationPageAndSearchInput(
       await chooseLocationButton.waitFor({ state: 'visible', timeout: 30000 });
       console.log('Found button with "Choose location" text');
       
-        console.log('Clicking "Choose location" button...');
-        await chooseLocationButton.click();
-        console.log('Clicked "Choose location" button');
-        
-        // Wait for new page to appear (about 5 seconds)
-        console.log('Waiting for new page to appear (3 seconds)...');
-        await page.waitForTimeout(3000);
-        
-        // Navigate to BJs_Location_Path
-        const locationUrl = buildLocationUrl();
-        console.log(`Navigating to location URL: ${locationUrl}`);
-        await page.goto(locationUrl);
-        console.log('Navigated to location page');
-        page.waitForTimeout(5000);
-        // If orderType is provided, find the input with placeholder matching the order type
-        if (orderType) {
-          const orderTypeText = ORDER_TYPE_TEXT_MAP[orderType];
-          const placeholderText = `${orderTypeText} radio`;
-          console.log(`Looking for input with placeholder "${placeholderText}"...`);
-          
-          // Find input with placeholder matching the order type
-          const inputElement = page.locator(`input[placeholder="${placeholderText}"]`).first();
-          
-          try {
-            await inputElement.waitFor({ state: 'visible', timeout: 30000 });
-            console.log(`Found input with placeholder "${placeholderText}"`);
-            
-            // Click on the input (it's a regular input, not a radio button)
-            console.log(`Clicking input with placeholder "${placeholderText}"...`);
-            // Try clicking with force option in case the element is covered
-            await inputElement.click({ force: true });
-            await page.waitForTimeout(1000);
-            console.log(`Clicked input with placeholder "${placeholderText}"`);
-             // Click on the button with text "Order <mapped_value>" (case insensitive)
-             const orderButtonText = `Order ${orderTypeText}`;
-             console.log(`Looking for button with text "${orderButtonText}" (case insensitive)...`);
-             const orderButton = page
-               .locator('button')
-               .filter({ hasText: new RegExp(`^Order ${orderTypeText}$`, 'i') })
-               .first();
-             
-             try {
-               await orderButton.waitFor({ state: 'visible', timeout: 30000 });
-               console.log(`Found button with text "${orderButtonText}"`);
-               
-               console.log(`Clicking button with text "${orderButtonText}"...`);
-               await orderButton.click();
-               console.log(`Clicked button with text "${orderButtonText}"`);
-             } catch (error) {
-               console.warn(`Button with text "${orderButtonText}" not found`);
-             }
-            // Call the appropriate handler function based on order type
-            switch (orderType) {
-              case 'takeout':
-                await handleTakeoutOrderType(page);
-                break;
-              case 'delivery':
-                await handleDeliveryOrderType(page);
-                break;
-              case 'dinein':
-                await handleDineInOrderType(page);
-                break;
-            }
-            // await page.goto(config.bjsMenuPath);
-            // await page.waitForTimeout(5000);
-          } catch (error) {
-            console.log(error);
-          }
-        }
-        
-        return true; // Successfully found and clicked
+      console.log('Clicking "Choose location" button...');
+      await chooseLocationButton.click();
+      console.log('Clicked "Choose location" button');
+      
+      // Wait for new page to appear (about 5 seconds)
+      console.log('Waiting for new page to appear (3 seconds)...');
+      await page.waitForTimeout(3000);
+      
+      return true; // Successfully found and clicked
     } catch (error) {
       console.warn(`Li with id="${locationId}" not found in new location list`);
       return false; // Not found, need to try next button
@@ -372,6 +309,94 @@ export async function waitForFindLocationPageAndSearchInput(
     console.warn(`New location list did not appear after clicking button ${buttonIndex + 1}`);
     return false; // Not found, need to try next button
   }
+}
+
+/**
+ * Navigate to find location page and enter search text
+ * @param page Playwright page object
+ * @param searchingSiteName Site name to search for
+ * @param locationId Location ID to select (from locationParsed.id)
+ * @param buttonIndex Button index to try (0-based)
+ * @param orderType Order type: 'takeout', 'delivery', or 'dinein'
+ */
+export async function waitForFindLocationPageAndSearchInput(
+  page: Page,
+  searchingSiteName: string,
+  locationId: string,
+  buttonIndex: number = 0,
+  orderType?: 'takeout' | 'delivery' | 'dinein'
+): Promise<boolean> {
+  // Use the extracted function to search and select location
+  const locationSelected = await searchAndSelectLocation(page, searchingSiteName, locationId, buttonIndex);
+  
+  if (!locationSelected) {
+    return false;
+  }
+  
+  // Navigate to BJs_Location_Path
+  const locationUrl = buildLocationUrl();
+  console.log(`Navigating to location URL: ${locationUrl}`);
+  await page.goto(locationUrl);
+  console.log('Navigated to location page');
+  await page.waitForTimeout(5000);
+  
+  // If orderType is provided, find the input with placeholder matching the order type
+  if (orderType) {
+    const orderTypeText = ORDER_TYPE_TEXT_MAP[orderType];
+    const placeholderText = `${orderTypeText} radio`;
+    console.log(`Looking for input with placeholder "${placeholderText}"...`);
+    
+    // Find input with placeholder matching the order type
+    const inputElement = page.locator(`input[placeholder="${placeholderText}"]`).first();
+    
+    try {
+      await inputElement.waitFor({ state: 'visible', timeout: 30000 });
+      console.log(`Found input with placeholder "${placeholderText}"`);
+      
+      // Click on the input (it's a regular input, not a radio button)
+      console.log(`Clicking input with placeholder "${placeholderText}"...`);
+      // Try clicking with force option in case the element is covered
+      await inputElement.click({ force: true });
+      await page.waitForTimeout(1000);
+      console.log(`Clicked input with placeholder "${placeholderText}"`);
+      
+      // Click on the button with text "Order <mapped_value>" (case insensitive)
+      const orderButtonText = `Order ${orderTypeText}`;
+      console.log(`Looking for button with text "${orderButtonText}" (case insensitive)...`);
+      const orderButton = page
+        .locator('button')
+        .filter({ hasText: new RegExp(`^Order ${orderTypeText}$`, 'i') })
+        .first();
+      
+      try {
+        await orderButton.waitFor({ state: 'visible', timeout: 30000 });
+        console.log(`Found button with text "${orderButtonText}"`);
+        
+        console.log(`Clicking button with text "${orderButtonText}"...`);
+        await orderButton.click();
+        console.log(`Clicked button with text "${orderButtonText}"`);
+      } catch (error) {
+        console.warn(`Button with text "${orderButtonText}" not found`);
+      }
+      
+      // Call the appropriate handler function based on order type
+      switch (orderType) {
+        case 'takeout':
+          await handleTakeoutOrderType(page);
+          break;
+        case 'delivery':
+          await handleDeliveryOrderType(page);
+          break;
+        case 'dinein':
+          await handleDineInOrderType(page);
+          break;
+      }
+    } catch (error) {
+      console.log(`Input with placeholder "${placeholderText}" not found:`, error);
+    }
+  }
+  
+  return true; // Successfully found and clicked
 }
 
 /**
