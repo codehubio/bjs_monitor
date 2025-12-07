@@ -192,11 +192,69 @@ test.describe('BJs Menu Page', () => {
           
           await productLink.waitFor({ state: 'visible', timeout: 30000 });
           console.log(`Found <a> tag containing product name: "${productName}"`);
+          
+          // Get the href and visit it
+          const href = await productLink.getAttribute('href');
+          if (href) {
+            console.log(`Visiting href: ${href}`);
+            await page.goto(href);
+            console.log(`Visited href: ${href}`);
+            
+            // Wait for 5 seconds
+            console.log('Waiting 5 seconds for potential age confirmation dialog...');
+            await page.waitForTimeout(3000);
+            
+            // Check if age confirmation dialog appears
+            const ageConfirmationButton = page
+              .locator('button')
+              .filter({ has: page.getByText(/yes, i am/i) })
+              .first();
+            
+            try {
+              // Try to find the button (with short timeout to check if dialog exists)
+              await ageConfirmationButton.waitFor({ state: 'visible', timeout: 2000 });
+              console.log('Age confirmation dialog detected, clicking "YES, I AM" button...');
+              await ageConfirmationButton.click();
+              console.log('Clicked "YES, I AM" button');
+              await ageConfirmationButton.waitFor({ state: 'visible', timeout: 3000 });
+              await page.waitForTimeout(3000);
+            } catch (error) {
+              // Dialog didn't appear, which is fine
+              console.log('No age confirmation dialog appeared');
+            }
+          } else {
+            console.warn(`No href found on <a> tag containing product name: "${productName}"`);
+          }
         }
 
         // Take a screenshot for this item
-        const screenshotFilename = `menu-page-${changeType}-${locationParsed.name.replace(/\s+/g, '-')}-${Date.now()}.png`;
+        // Format: year-month-date-location_id-location_name-category_id-category_name-product_id-product_name
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        
+        // Helper function to sanitize filename parts
+        const sanitize = (str: string): string => {
+          return str
+            .replace(/\s+/g, '-')
+            .replace(/[^a-zA-Z0-9\-]/g, '')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+        };
+        
+        const locationId = locationParsed.id || 'N/A';
+        const locationName = sanitize(locationParsed.name || 'N/A');
+        const categoryId = change.after.categoryParsed?.id || 'N/A';
+        const categoryName = sanitize(change.after.categoryParsed?.name || 'N/A');
+        const productId = change.after.productParsed?.id || 'N/A';
+        const productName = sanitize(change.after.productParsed?.name || 'N/A');
+        
+        const screenshotFilename = `${dateStr}-${locationId}-${locationName}-${categoryId}-${categoryName}-${productId}-${productName}.png`;
         const screenshotPath = path.join(screenshotDir, screenshotFilename);
+        
+        console.log(`Screenshot filename: ${screenshotFilename}`);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`Screenshot saved: ${screenshotPath}`);
 
