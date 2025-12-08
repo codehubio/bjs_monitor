@@ -1,0 +1,22 @@
+[
+  {
+    "date": "2025-12-04",
+    "totalEapis": 154821,
+    "httpErrorNon5xx": 18525,
+    "httpError5xx": 708,
+    "socketHangUpErrors": 1293,
+    "cronjobEapis": 45720,
+    "eapiDurationOver10Seconds": 1509,
+    "successfulOrders": 2583,
+    "failedOrders": 6,
+    "successfulMobilePayments": 49,
+    "failedMobilePayments": 1,
+    "successfulDesktopPayments": 2494,
+    "failedDesktopPayments": 426,
+    "successfulPaypalButFailedSubmitOrder": 0,
+    "successfulPaypal": 189,
+    "failedMobilePaypal": 11,
+    "failedDesktopPaypal": 10,
+    "openCheck": 86
+  }
+]
