@@ -1,4 +1,6 @@
 import { config } from '../config';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Build S3 base URL from s3Prefix and a custom prefix
@@ -85,4 +87,133 @@ export function parseUTCTime(timeStr: string, timezoneOffset: number = 0): strin
   const utcDate = new Date(localDate.getTime() - offsetMs);
   
   return utcDate.toISOString();
+}
+
+/**
+ * Type definition for daily stats entry
+ */
+export type DailyStatsEntry = { 
+  date: string; 
+  order?: { success: number; failed: number }; 
+  openCheck?: { count: number };
+  payment?: { 
+    mobile?: { success: number; failed: number };
+    desktop?: { success: number; failed: number };
+    // Support old format for migration
+    success?: number;
+    failed?: number;
+  };
+  eapi?: {
+    total?: number;
+    errors4xx?: number;
+    errors5xx?: number;
+    errorsOther?: number;
+    httpErrors?: Array<{ status: string; count: number }>;
+    [key: string]: any;
+  };
+  [key: string]: any 
+};
+
+/**
+ * Deep merge two objects, with the source object taking precedence
+ * @param target The target object to merge into
+ * @param source The source object to merge from
+ * @returns The merged object
+ */
+function deepMerge(target: any, source: any): any {
+  if (!source || typeof source !== 'object') {
+    return source;
+  }
+  
+  if (!target || typeof target !== 'object') {
+    return source;
+  }
+  
+  const result = { ...target };
+  
+  for (const key in source) {
+    if (source.hasOwnProperty(key)) {
+      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        // Recursively merge nested objects
+        result[key] = deepMerge(result[key], source[key]);
+      } else {
+        // Overwrite with source value (including arrays and primitives)
+        result[key] = source[key];
+      }
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * Merge data entry to daily-stats.json
+ * Reads existing daily-stats.json, merges the dateEntry, and writes back to file
+ * @param dateEntry The entry to merge (must have a 'date' field)
+ * @returns The updated daily stats array
+ */
+export function mergeToDailyStats(dateEntry: DailyStatsEntry): DailyStatsEntry[] {
+  const dailyStatsPath = path.resolve(process.cwd(), 'src', 'data', 'daily-stats.json');
+  
+  if (!dateEntry.date) {
+    throw new Error('dateEntry must have a "date" field');
+  }
+  
+  let dailyStats: DailyStatsEntry[] = [];
+  
+  // Read existing daily-stats.json
+  if (fs.existsSync(dailyStatsPath)) {
+    const existingData = fs.readFileSync(dailyStatsPath, 'utf-8');
+    const parsed = JSON.parse(existingData);
+    
+    // Handle migration: convert old formats to new structure
+    if (Array.isArray(parsed)) {
+      // Check if it's the old format with direct success/failed or new format with order object
+      if (parsed.length > 0 && 'success' in parsed[0] && !('order' in parsed[0])) {
+        // Old format: [{date, success, failed}]
+        dailyStats = parsed.map((item: any) => ({
+          date: item.date,
+          order: {
+            success: item.success,
+            failed: item.failed
+          }
+        }));
+      } else {
+        // Already new format or empty array
+        dailyStats = parsed;
+      }
+    } else if (parsed && typeof parsed === 'object' && parsed.order && Array.isArray(parsed.order)) {
+      // Old format: {order: [{date, success, failed}]}
+      dailyStats = parsed.order.map((item: any) => ({
+        date: item.date,
+        order: {
+          success: item.success,
+          failed: item.failed
+        }
+      }));
+    } else {
+      dailyStats = [];
+    }
+  }
+  
+  // Find or create entry for this date
+  const existingIndex = dailyStats.findIndex(item => item.date === dateEntry.date);
+  
+  if (existingIndex >= 0) {
+    // Update existing entry with deep merge
+    dailyStats[existingIndex] = deepMerge(dailyStats[existingIndex], dateEntry);
+    console.log(`\nUpdated daily-stats.json for date ${dateEntry.date}`);
+  } else {
+    // Add new entry (keep sorted by date)
+    dailyStats.push(dateEntry);
+    // Sort by date
+    dailyStats.sort((a, b) => a.date.localeCompare(b.date));
+    console.log(`\nAdded new entry to daily-stats.json for date ${dateEntry.date}`);
+  }
+  
+  // Write updated data back to file
+  fs.writeFileSync(dailyStatsPath, JSON.stringify(dailyStats, null, 2));
+  console.log(`Stats written to: ${dailyStatsPath}`);
+  
+  return dailyStats;
 }

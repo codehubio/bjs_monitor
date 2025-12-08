@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
-import { buildOrderBlock } from '../blocks/order-block';
+import { buildSummayBlock } from '../blocks/daily-summary-block';
 
 const FOLDER_PREFIX = 'daily-1';
 
@@ -30,14 +30,10 @@ test.describe('Daily 1 report', () => {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
     const results: any [][]= [];
-    // results.push([{'EAPI Report':{ type: 'separator' }}]);  
-    // const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
-    // results.push(...eapiBlock);
+    results.push([{'EAPI Report':{ type: 'separator' }}]);  
+    const eapiBlock = await buildSummayBlock(page, fromTime, toTime, prefix);
+    results.push(...eapiBlock);
     
-    results.push([{'Order Report':{ type: 'separator' }}]);  
-    const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
-    results.push(...orderBlock);
-
 
 
     // Step 5: Upload results folder to S3 with custom prefix

@@ -1401,6 +1401,46 @@
         "success": 2494,
         "failed": 426
       }
+    },
+    "eapi": {
+      "total": 154821,
+      "errors4xx": 22,
+      "errors5xx": 708,
+      "errorsOther": 10,
+      "httpErrors": [
+        {
+          "status": "524",
+          "count": 622
+        },
+        {
+          "status": "520",
+          "count": 43
+        },
+        {
+          "status": "522",
+          "count": 28
+        },
+        {
+          "status": "401",
+          "count": 19
+        },
+        {
+          "status": "523",
+          "count": 13
+        },
+        {
+          "status": "0",
+          "count": 10
+        },
+        {
+          "status": "404",
+          "count": 3
+        },
+        {
+          "status": "502",
+          "count": 2
+        }
+      ]
     }
   },
   {

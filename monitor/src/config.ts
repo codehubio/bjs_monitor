@@ -15,6 +15,7 @@ export const config = {
   graylogOpenCheckSearchView: process.env.GRAYLOG_OPEN_CHECK_SEARCH_VIEW || '',
   graylogPaypalSearchView: process.env.GRAYLOG_PAYPAL_SEARCH_VIEW || '',
   graylogFailedOrderSearchView: process.env.GRAYLOG_FAILED_ORDER_SEARCH_VIEW || '',
+  graylogNumberView: process.env.GRAYLOG_NUMBER_VIEW || '',
   graylogQueryFromTime: process.env.GRAYLOG_QUERY_FROM_TIME || '',
   graylogQueryToTime: process.env.GRAYLOG_QUERY_TO_TIME || '',
   awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID || '',

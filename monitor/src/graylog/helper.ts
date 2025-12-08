@@ -230,10 +230,13 @@ export class GraylogHelper {
     
     // Wait for the input to be visible
     await queryInput.waitFor({ state: 'visible', timeout: 10000 });
-    
     // Clear any existing text and enter the new query
-    await queryInput.clear();
-    await queryInput.fill(queryText);
+    // Use multiple strategies to ensure the input is cleared
+    await queryInput.click({force: true}); // Focus the input
+    await queryInput.selectText(); // Select all existing text
+    await queryInput.fill(''); // Clear by filling with empty string
+    await queryInput.clear(); // Also use clear() method
+    await queryInput.fill(queryText); // Fill with new query
     
     // Press Enter if requested
     if (pressEnter) {
