@@ -38,9 +38,6 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
 
   // Array to store results (before S3 upload, screenshots are just filenames)
   const singleQueryResults: any[] = [];
-  const queryView = config.graylogNumberView;
-  await graylogHelper.loginAndVisitSearchView(queryView);
-  await graylogHelper.selectTimeRange(fromTime, toTime);
   await page.waitForTimeout(3000);
   console.log(`Total queries: ${queries.length}`);
   // Step 4: Loop through each query and execute the same task
@@ -51,6 +48,8 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
       name,
       view
     } = queries[i] as any;
+    await graylogHelper.loginAndVisitSearchView(view);
+    await graylogHelper.selectTimeRange(fromTime, toTime);
     console.log(`\n=== Processing Query ${i + 1}/${queries.length} ===`);
     console.log('Query Name:', name);
     console.log('Query:', query);
