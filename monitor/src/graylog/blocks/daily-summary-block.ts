@@ -157,10 +157,10 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
               statsData.failedMobilePayments = numericCount;
               break;
             case "Total success BJS online payments":
-              statsData.successfulDesktopPayments = numericCount;
+              statsData.successfulBjsOnlinePayments = numericCount;
               break;
             case "Total failed BJS online payments":
-              statsData.failedDesktopPayments = numericCount;
+              statsData.failedBjsOnlinePayments = numericCount;
               break;
             case `Total "Succesful Paypal but Failed SubmitOrder"`:
               statsData.successfulPaypalButFailedSubmitOrder = numericCount;
@@ -172,7 +172,7 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
               statsData.failedMobilePaypal = numericCount;
               break;
             case `Total failure BJS online paypal (ERR_PAYPAL_PAYMENT_PAGE_LOAD/ERR_PAYPAL_PAYMENT_VALIDATION/ERR_PAYPAL_PAYMENT_EAPI)`:
-              statsData.failedDesktopPaypal = numericCount;
+              statsData.failedBjsOnlinePaypal = numericCount;
               break;
             case "Total open check":
               statsData.openCheck = numericCount;

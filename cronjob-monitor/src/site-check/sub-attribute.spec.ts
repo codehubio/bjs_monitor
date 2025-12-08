@@ -327,8 +327,16 @@ test.describe('BJs Sub-Attributes Page', () => {
     if (teamsData.length > 0) {
       console.log(`\nUploading ${teamsData.length} screenshot(s) to S3 and sending to MS Teams...`);
       try {
+        // Format date for title: YYYY-MM-DD
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        const title = `Report status - Cronjob Summary SubAttribute - ${dateStr}`;
+        
         await uploadScreenshotsAndSendToMsTeams(
-          'Product Screenshots',
+          title,
           teamsData
         );
         console.log('Successfully sent screenshots to MS Teams');

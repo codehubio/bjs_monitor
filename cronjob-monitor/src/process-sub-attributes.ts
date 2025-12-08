@@ -37,7 +37,7 @@ export async function processSubAttributesFile(csvFilePath: string, outputDir?: 
   const result = processSubAttributesFromCSV(csvFilePath);
   console.log(`Total rows found: ${result.rows}\n`);
   
-  // Check if non-removed items exceed 15, if so randomly sample 15 before enrichment
+  // Check if non-removed items exceed 10, if so randomly sample 10 before enrichment
   const nonRemovedCount = result.added.length + result.modified.length + result.moved.length;
   let itemsToProcess = {
     added: result.added,
@@ -46,12 +46,12 @@ export async function processSubAttributesFile(csvFilePath: string, outputDir?: 
     moved: result.moved
   };
   
-  if (nonRemovedCount > 15) {
-    console.log(`Found ${nonRemovedCount} non-removed items. Randomly sampling 15 items (excluding ${result.removed.length} removed items) before enrichment.\n`);
+  if (nonRemovedCount > 10) {
+    console.log(`Found ${nonRemovedCount} non-removed items. Randomly sampling 10 items (excluding ${result.removed.length} removed items) before enrichment.\n`);
     
     // Combine all non-removed items
     const allNonRemoved = [...result.added, ...result.modified, ...result.moved];
-    const sampled = randomSample(allNonRemoved, 15);
+    const sampled = randomSample(allNonRemoved, 10);
     
     // Separate sampled items back into their categories
     const sampledAdded: SubAttributesChange[] = [];

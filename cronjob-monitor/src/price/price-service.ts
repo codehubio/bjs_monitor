@@ -1,6 +1,6 @@
-import { parseAttributesCSV } from './csv-parser';
-import { parseField, parseAttributesField } from './field-parser';
-import { AttributesRow, AttributesChange } from '../types';
+import { parsePriceCSV } from './csv-parser';
+import { parseField } from './field-parser';
+import { PriceRow, PriceChange } from '../types';
 
 /**
  * Check if a product field is empty (product is the key field)
@@ -12,7 +12,7 @@ function isProductEmpty(product: string): boolean {
 /**
  * Determine the type of change between before and after entries
  */
-function determineChangeType(row: AttributesRow): AttributesChange['changeType'] {
+function determineChangeType(row: PriceRow): PriceChange['changeType'] {
   const beforeHasProduct = !isProductEmpty(row.beforeProduct);
   const afterHasProduct = !isProductEmpty(row.afterProduct);
   
@@ -36,9 +36,9 @@ function determineChangeType(row: AttributesRow): AttributesChange['changeType']
       return 'moved';
     } else if (
       row.beforeProduct !== row.afterProduct ||
-      row.beforeAttributes !== row.afterAttributes
+      row.beforePrice !== row.afterPrice
     ) {
-      // Same location/category but different product/attributes
+      // Same location/category but different product ID or price
       return 'modified';
     }
   }
@@ -48,42 +48,40 @@ function determineChangeType(row: AttributesRow): AttributesChange['changeType']
 }
 
 /**
- * Process attributes rows and categorize changes
+ * Process price rows and categorize changes
  */
-export function processAttributesChanges(rows: AttributesRow[]): {
-  added: AttributesChange[];
-  removed: AttributesChange[];
-  modified: AttributesChange[];
-  moved: AttributesChange[];
-  all: AttributesChange[];
+export function processPriceChanges(rows: PriceRow[]): {
+  added: PriceChange[];
+  removed: PriceChange[];
+  modified: PriceChange[];
+  moved: PriceChange[];
+  all: PriceChange[];
 } {
-  const added: AttributesChange[] = [];
-  const removed: AttributesChange[] = [];
-  const modified: AttributesChange[] = [];
-  const moved: AttributesChange[] = [];
-  const all: AttributesChange[] = [];
+  const added: PriceChange[] = [];
+  const removed: PriceChange[] = [];
+  const modified: PriceChange[] = [];
+  const moved: PriceChange[] = [];
+  const all: PriceChange[] = [];
   
   for (const row of rows) {
-    const change: AttributesChange = {
+    const change: PriceChange = {
       before: {
         location: row.beforeLocation,
         category: row.beforeCategory,
         product: row.beforeProduct,
-        attributes: row.beforeAttributes,
+        price: row.beforePrice,
         locationParsed: parseField(row.beforeLocation),
         categoryParsed: parseField(row.beforeCategory),
-        productParsed: parseField(row.beforeProduct),
-        attributesParsed: parseAttributesField(row.beforeAttributes)
+        productParsed: parseField(row.beforeProduct)
       },
       after: {
         location: row.afterLocation,
         category: row.afterCategory,
         product: row.afterProduct,
-        attributes: row.afterAttributes,
+        price: row.afterPrice,
         locationParsed: parseField(row.afterLocation),
         categoryParsed: parseField(row.afterCategory),
-        productParsed: parseField(row.afterProduct),
-        attributesParsed: parseAttributesField(row.afterAttributes)
+        productParsed: parseField(row.afterProduct)
       },
       changeType: determineChangeType(row)
     };
@@ -110,18 +108,18 @@ export function processAttributesChanges(rows: AttributesRow[]): {
 }
 
 /**
- * Process attributes from CSV file
+ * Process prices from CSV file
  */
-export function processAttributesFromCSV(csvFilePath: string): {
+export function processPricesFromCSV(csvFilePath: string): {
   rows: number;
-  added: AttributesChange[];
-  removed: AttributesChange[];
-  modified: AttributesChange[];
-  moved: AttributesChange[];
-  all: AttributesChange[];
+  added: PriceChange[];
+  removed: PriceChange[];
+  modified: PriceChange[];
+  moved: PriceChange[];
+  all: PriceChange[];
 } {
-  const rows = parseAttributesCSV(csvFilePath);
-  const changes = processAttributesChanges(rows);
+  const rows = parsePriceCSV(csvFilePath);
+  const changes = processPriceChanges(rows);
   return {
     rows: rows.length,
     ...changes

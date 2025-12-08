@@ -3,15 +3,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { config } from '../config';
 import { waitForFindLocationPageAndSearchInputAndSelectOrderType } from './fixture';
-import { ProductChange } from '../types';
+import { AttributesChange } from '../types';
 import { uploadScreenshotsAndSendToMsTeams } from '../util/sendToMsTeam';
 
 /**
  * Check item availability for different order types
- * @param change ProductChange item to check
+ * @param change AttributesChange item to check
  * @returns Array of available order types: 'takeout', 'delivery', 'dinein'
  */
-function getAvailableOrderTypes(change: ProductChange): Array<'takeout' | 'delivery' | 'dinein'> {
+function getAvailableOrderTypes(change: AttributesChange): Array<'takeout' | 'delivery' | 'dinein'> {
   const availableOrderTypes: Array<'takeout' | 'delivery' | 'dinein'> = [];
   
   // Check menuItemInfo for availability flags
@@ -40,37 +40,37 @@ function getAvailableOrderTypes(change: ProductChange): Array<'takeout' | 'deliv
 }
 
 /**
- * Read products-changes.json and extract all items with product after change
+ * Read attributes-changes.json and extract all items with attributes after change
  */
-function getItemsFromProductsChanges(): Array<{ 
-  change: ProductChange; 
+function getItemsFromAttributesChanges(): Array<{ 
+  change: AttributesChange; 
   changeType: 'added' | 'removed' | 'modified' | 'moved';
 }> {
-  const jsonPath = path.resolve(__dirname, '../../result/products-changes.json');
+  const jsonPath = path.resolve(__dirname, '../../result/attributes-changes.json');
   
   if (!fs.existsSync(jsonPath)) {
-    throw new Error(`Products changes file not found: ${jsonPath}`);
+    throw new Error(`Attributes changes file not found: ${jsonPath}`);
   }
 
   const fileContent = fs.readFileSync(jsonPath, 'utf-8');
   const data: {
     summary: any;
     changes: {
-      added: ProductChange[];
-      removed: ProductChange[];
-      modified: ProductChange[];
-      moved: ProductChange[];
+      added: AttributesChange[];
+      removed: AttributesChange[];
+      modified: AttributesChange[];
+      moved: AttributesChange[];
     };
   } = JSON.parse(fileContent);
 
   const items: Array<{ 
-    change: ProductChange; 
+    change: AttributesChange; 
     changeType: 'added' | 'removed' | 'modified' | 'moved';
   }> = [];
 
-  // Get items from added changes (use after location and product)
+  // Get items from added changes (only if they have attributesParsed.name and attributesParsed.id)
   data.changes.added.forEach(change => {
-    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
+    if (change.after.attributesParsed?.id && change.after.attributesParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
         changeType: 'added'
@@ -78,9 +78,9 @@ function getItemsFromProductsChanges(): Array<{
     }
   });
 
-  // Get items from removed changes (only if they have product after change)
+  // Get items from removed changes (only if they have attributesParsed.name and attributesParsed.id)
   data.changes.removed.forEach(change => {
-    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
+    if (change.after.attributesParsed?.id && change.after.attributesParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
         changeType: 'removed'
@@ -88,9 +88,9 @@ function getItemsFromProductsChanges(): Array<{
     }
   });
 
-  // Get items from modified changes (use after location and product)
+  // Get items from modified changes (only if they have attributesParsed.name and attributesParsed.id)
   data.changes.modified.forEach(change => {
-    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
+    if (change.after.attributesParsed?.id && change.after.attributesParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
         changeType: 'modified'
@@ -98,9 +98,9 @@ function getItemsFromProductsChanges(): Array<{
     }
   });
 
-  // Get items from moved changes (use after location and product)
+  // Get items from moved changes (only if they have attributesParsed.name and attributesParsed.id)
   data.changes.moved.forEach(change => {
-    if (change.after.productParsed?.id && change.after.productParsed?.name && change.after.locationParsed?.id) {
+    if (change.after.attributesParsed?.id && change.after.attributesParsed?.name && change.after.locationParsed?.id) {
       items.push({
         change,
         changeType: 'moved'
@@ -111,10 +111,10 @@ function getItemsFromProductsChanges(): Array<{
   return items;
 }
 
-test.describe('BJs Menu Page', () => {
-  test('should visit the menu page and search for locations from products-changes.json', async ({ browser }) => {
-    // Get all items from products-changes.json
-    const items = getItemsFromProductsChanges();
+test.describe('BJs Attributes Page', () => {
+  test('should visit the menu page and search for locations from attributes-changes.json', async ({ browser }) => {
+    // Get all items from attributes-changes.json
+    const items = getItemsFromAttributesChanges();
     console.log(`Found ${items.length} items to process`);
 
     // Create screenshot directory if it doesn't exist
@@ -141,9 +141,9 @@ test.describe('BJs Menu Page', () => {
       const item = items[i];
       const { change, changeType } = item;
       
-      // Skip items that don't have productParsed.name in the "after" part
-      if (!change.after.productParsed?.name) {
-        console.log(`\nSkipping ${changeType} item - Location: ${change.after.locationParsed?.name || 'N/A'} (ID: ${change.after.locationParsed?.id || 'N/A'}) - No product name in "after" part`);
+      // Skip items that don't have attributesParsed.name in the "after" part
+      if (!change.after.attributesParsed?.name) {
+        console.log(`\nSkipping ${changeType} item - Location: ${change.after.locationParsed?.name || 'N/A'} (ID: ${change.after.locationParsed?.id || 'N/A'}) - No attributes name in "after" part`);
         continue;
       }
       
@@ -160,7 +160,7 @@ test.describe('BJs Menu Page', () => {
       const orderType = availableOrderTypes[0];
       
       // Output item details before proceeding (one line)
-      console.log(`\nProcessing ${changeType} | Location ID: ${change.after.locationParsed?.id || 'N/A'} | Location Name: ${change.after.locationParsed?.name || 'N/A'} | Category ID: ${change.after.categoryParsed?.id || 'N/A'} | Category Name: ${change.after.categoryParsed?.name || 'N/A'} | Item ID: ${change.after.productParsed?.id || 'N/A'} | Item Name: ${change.after.productParsed?.name || 'N/A'} | Order Type: ${orderType}`);
+      console.log(`\nProcessing ${changeType} | Location ID: ${change.after.locationParsed?.id || 'N/A'} | Location Name: ${change.after.locationParsed?.name || 'N/A'} | Category ID: ${change.after.categoryParsed?.id || 'N/A'} | Category Name: ${change.after.categoryParsed?.name || 'N/A'} | Product ID: ${change.after.productParsed?.id || 'N/A'} | Product Name: ${change.after.productParsed?.name || 'N/A'} | Attributes ID: ${change.after.attributesParsed?.id || 'N/A'} | Attributes Name: ${change.after.attributesParsed?.name || 'N/A'} | Order Type: ${orderType}`);
       
       // Create a new browser context for this item
       const context = await browser.newContext({
@@ -180,7 +180,7 @@ test.describe('BJs Menu Page', () => {
         let productUrl: string = 'Not found';
         
         // For added items, wait for the <a> tag containing the product name
-        if (changeType === 'added' && change.after.productParsed?.name) {
+        if (change.after.productParsed?.name) {
           const productName = change.after.productParsed.name;
           console.log(`Waiting for <a> tag containing product name: "${productName}"...`);
           
@@ -219,14 +219,63 @@ test.describe('BJs Menu Page', () => {
                 console.log('Clicked "YES, I AM" button');
                 await ageConfirmationButton.waitFor({ state: 'visible', timeout: 3000 });
                 await page.waitForTimeout(3000);
+             
               } catch (error) {
                 // Dialog didn't appear, which is fine
                 console.log('No age confirmation dialog appeared');
               }
-               // Scroll down and wait
-               console.log('Scrolling down...');
-               await page.keyboard.press('PageDown');
-               await page.waitForTimeout(2000);
+                 
+                // Scroll down and wait
+                console.log('Scrolling down...');
+                await page.keyboard.press('PageDown');
+                await page.waitForTimeout(2000);
+              
+              // Locate and click button with category text before finding attributes
+              if (change.after.attributesParsed?.category) {
+                const categoryName = change.after.attributesParsed.category;
+                console.log(`Searching for button with category text: "${categoryName}"...`);
+                
+                const categoryButton = page
+                  .locator('button')
+                  .filter({ has: page.getByText(categoryName, { exact: true }) })
+                  .first();
+                
+                try {
+                  await categoryButton.waitFor({ state: 'visible', timeout: 15000 });
+                  console.log(`Found button with category text: "${categoryName}"`);
+                  await categoryButton.click();
+                  console.log(`Clicked button with category text: "${categoryName}"`);
+                  await page.waitForTimeout(2000);
+                } catch (error) {
+                  console.warn(`Button with category text "${categoryName}" not found`);
+                }
+              }
+              
+              // Search for label with attributesParsed.name and click input inside it
+              if (change.after.attributesParsed?.name) {
+                const attributesName = change.after.attributesParsed.name;
+                console.log(`Searching for label with attributes name: "${attributesName}"...`);
+                
+                const attributesLabel = page
+                  .locator('label')
+                  .filter({ has: page.getByText(attributesName) })
+                  .first();
+                
+                try {
+                  await attributesLabel.waitFor({ state: 'visible', timeout: 15000 });
+                  console.log(`Found label with attributes name: "${attributesName}"`);
+                  
+                  // Find input inside the label
+                  const attributesInput = attributesLabel.locator('input').first();
+                  await attributesInput.waitFor({ state: 'visible', timeout: 5000 });
+                  console.log(`Found input inside label with attributes name: "${attributesName}"`);
+                  await attributesInput.click({force: true});
+                  console.log(`Clicked input inside label with attributes name: "${attributesName}"`);
+                  await page.waitForTimeout(3000);
+                } catch (error) {
+                  console.warn(`Label with attributes name "${attributesName}" or input inside it not found`);
+                }
+              }
             } else {
               console.warn(`No href found on <a> tag containing product name: "${productName}"`);
             }
@@ -306,7 +355,7 @@ test.describe('BJs Menu Page', () => {
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
-        const title = `Report status - Cronjob Summary Product - ${dateStr}`;
+        const title = `Report status - Cronjob Summary Attribute - ${dateStr}`;
         
         await uploadScreenshotsAndSendToMsTeams(
           title,

@@ -1,8 +1,8 @@
 import * as path from 'path';
-import { processAttributesFromCSV } from './attributes/attributes-service';
-import { formatAttributesChange, saveChangesToJSON } from './attributes/output-service';
-import { enrichAddedAttributesWithMenuItems } from './attributes/menu-item-enricher';
-import { AttributesChange } from './types';
+import { processPricesFromCSV } from './price/price-service';
+import { formatPriceChange, saveChangesToJSON } from './price/output-service';
+import { enrichAddedPricesWithMenuItems } from './price/menu-item-enricher';
+import { PriceChange } from './types';
 
 /**
  * Randomly sample items from an array using Fisher-Yates shuffle
@@ -31,10 +31,10 @@ function randomSample<T>(array: T[], count: number): T[] {
 /**
  * Main processing function
  */
-export async function processAttributesFile(csvFilePath: string, outputDir?: string): Promise<void> {
-  console.log(`Processing attributes CSV: ${csvFilePath}\n`);
+export async function processPriceFile(csvFilePath: string, outputDir?: string): Promise<void> {
+  console.log(`Processing price CSV: ${csvFilePath}\n`);
   
-  const result = processAttributesFromCSV(csvFilePath);
+  const result = processPricesFromCSV(csvFilePath);
   console.log(`Total rows found: ${result.rows}\n`);
   
   // Check if non-removed items exceed 10, if so randomly sample 10 before enrichment
@@ -54,9 +54,9 @@ export async function processAttributesFile(csvFilePath: string, outputDir?: str
     const sampled = randomSample(allNonRemoved, 10);
     
     // Separate sampled items back into their categories
-    const sampledAdded: AttributesChange[] = [];
-    const sampledModified: AttributesChange[] = [];
-    const sampledMoved: AttributesChange[] = [];
+    const sampledAdded: PriceChange[] = [];
+    const sampledModified: PriceChange[] = [];
+    const sampledMoved: PriceChange[] = [];
     
     sampled.forEach(item => {
       if (item.changeType === 'added') {
@@ -76,10 +76,10 @@ export async function processAttributesFile(csvFilePath: string, outputDir?: str
     };
   }
   
-  // Enrich added and modified attributes with menu item information (only the sampled items if sampling occurred)
-  console.log('Enriching added and modified attributes with menu item details...\n');
+  // Enrich added and modified prices with menu item information (only the sampled items if sampling occurred)
+  console.log('Enriching added and modified prices with menu item details...\n');
   const itemsToEnrich = [...itemsToProcess.added, ...itemsToProcess.modified];
-  const enrichedItems = await enrichAddedAttributesWithMenuItems(itemsToEnrich);
+  const enrichedItems = await enrichAddedPricesWithMenuItems(itemsToEnrich);
   
   // Separate enriched items back into added and modified
   const enrichedAdded = enrichedItems.filter(item => item.changeType === 'added');
@@ -94,7 +94,7 @@ export async function processAttributesFile(csvFilePath: string, outputDir?: str
   
   const total = changes.added.length + changes.removed.length + changes.modified.length + changes.moved.length;
   
-  console.log('=== ATTRIBUTES CHANGES SUMMARY ===\n');
+  console.log('=== PRICE CHANGES SUMMARY ===\n');
   console.log(`Added: ${changes.added.length}`);
   console.log(`Removed: ${changes.removed.length}`);
   console.log(`Modified: ${changes.modified.length}`);
@@ -108,40 +108,40 @@ export async function processAttributesFile(csvFilePath: string, outputDir?: str
   }
   
   if (changes.added.length > 0) {
-    console.log('\n=== ADDED ATTRIBUTES ===');
+    console.log('\n=== ADDED PRICES ===');
     changes.added.forEach(change => {
-      console.log(formatAttributesChange(change));
+      console.log(formatPriceChange(change));
     });
   }
   
   if (changes.removed.length > 0) {
-    console.log('\n=== REMOVED ATTRIBUTES ===');
+    console.log('\n=== REMOVED PRICES ===');
     changes.removed.forEach(change => {
-      console.log(formatAttributesChange(change));
+      console.log(formatPriceChange(change));
     });
   }
   
   if (changes.moved.length > 0) {
-    console.log('\n=== MOVED ATTRIBUTES ===');
+    console.log('\n=== MOVED PRICES ===');
     changes.moved.forEach(change => {
-      console.log(formatAttributesChange(change));
+      console.log(formatPriceChange(change));
     });
   }
   
   if (changes.modified.length > 0) {
-    console.log('\n=== MODIFIED ATTRIBUTES ===');
+    console.log('\n=== MODIFIED PRICES ===');
     changes.modified.forEach(change => {
-      console.log(formatAttributesChange(change));
+      console.log(formatPriceChange(change));
     });
   }
 }
 
 // Main execution
 if (require.main === module) {
-  const csvPath = path.resolve(__dirname, '../csv/attributes.csv');
+  const csvPath = path.resolve(__dirname, '../csv/price.csv');
   const resultDir = path.resolve(__dirname, '../result');
-  processAttributesFile(csvPath, resultDir).catch(error => {
-    console.error('Error processing attributes:', error);
+  processPriceFile(csvPath, resultDir).catch(error => {
+    console.error('Error processing prices:', error);
     process.exit(1);
   });
 }

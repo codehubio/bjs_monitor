@@ -9,8 +9,11 @@
     "process:products": "source ./load-env.sh && ts-node src/process-products.ts",
     "process:sub-attributes": "source ./load-env.sh && ts-node src/process-sub-attributes.ts",
     "process:attributes": "source ./load-env.sh && ts-node src/process-attributes.ts",
+    "process:price": "source ./load-env.sh && ts-node src/process-price.ts",
     "test:products": "source ./load-env.sh && playwright test src/site-check/menu.spec.ts --config=src/site-check/playwright.config.ts",
     "test:sub-attributes": "source ./load-env.sh && playwright test src/site-check/sub-attribute.spec.ts --config=src/site-check/playwright.config.ts",
+    "test:attributes": "source ./load-env.sh && playwright test src/site-check/attribute.spec.ts --config=src/site-check/playwright.config.ts",
+    "test:price": "source ./load-env.sh && playwright test src/site-check/price.spec.ts --config=src/site-check/playwright.config.ts",
     "install:browsers": "playwright install chromium"
   },
   "keywords": [

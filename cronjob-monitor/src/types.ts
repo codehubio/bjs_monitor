@@ -8,6 +8,15 @@ export interface ParsedField {
 }
 
 /**
+ * Parsed attributes field with category
+ * Format: <type>-<attribute-category-name>-<attribute-id>:<attribute-name> | prices
+ */
+export interface ParsedAttributesField extends ParsedField {
+  category?: string; // Attribute category name (e.g., "Cheese")
+  type?: string; // Attribute type (e.g., "Regular")
+}
+
+/**
  * Product entry for a specific time period (before or after)
  */
 export interface ProductEntry {
@@ -54,6 +63,45 @@ export interface ProductRow {
   afterLocation: string;
   afterCategory: string;
   afterProduct: string;
+}
+
+/**
+ * Price entry for a specific time period (before or after)
+ */
+export interface PriceEntry {
+  location: string;
+  category: string;
+  product: string;
+  price: string;
+  // Parsed fields
+  locationParsed?: ParsedField;
+  categoryParsed?: ParsedField;
+  productParsed?: ParsedField;
+}
+
+/**
+ * Price change record comparing before and after states
+ */
+export interface PriceChange {
+  before: PriceEntry;
+  after: PriceEntry;
+  changeType: 'added' | 'removed' | 'modified' | 'moved';
+  menuItemInfo?: MenuItemInfo; // Menu item details for added prices
+}
+
+/**
+ * Parsed CSV row data for price
+ * Left columns (0-3) are "before", right columns (4-7) are "after"
+ */
+export interface PriceRow {
+  beforeLocation: string;
+  beforeCategory: string;
+  beforeProduct: string;
+  beforePrice: string;
+  afterLocation: string;
+  afterCategory: string;
+  afterProduct: string;
+  afterPrice: string;
 }
 
 /**
@@ -112,7 +160,7 @@ export interface AttributesEntry {
   locationParsed?: ParsedField;
   categoryParsed?: ParsedField;
   productParsed?: ParsedField;
-  attributesParsed?: ParsedField;
+  attributesParsed?: ParsedAttributesField;
 }
 
 /**
