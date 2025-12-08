@@ -6,7 +6,7 @@ const queries =[{
   "view": config.graylogDailyEapiSearchView
 }, {
   "name": "Total EAPI cronjob", 
-  "query":"eapi_ip:undefined",
+  "query":"eapi_ip:undefined AND NOT eapi_direction:Started",
   "view": config.graylogDailyEapiSearchView
 },  {
   "name": "EAPI calls by duration > 10 seconds",

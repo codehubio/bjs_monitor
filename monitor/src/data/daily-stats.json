@@ -1432,6 +1432,50 @@
     }
   },
   {
+    "date": "2025-12-06",
+    "eapi": {
+      "total": 177496,
+      "errors4xx": 36,
+      "errors5xx": 0,
+      "errorsOther": 4,
+      "httpErrors": [
+        {
+          "status": "401",
+          "count": 32
+        },
+        {
+          "status": "0",
+          "count": 4
+        },
+        {
+          "status": "400",
+          "count": 3
+        },
+        {
+          "status": "404",
+          "count": 1
+        }
+      ]
+    },
+    "order": {
+      "success": 2855,
+      "failed": 15
+    },
+    "openCheck": {
+      "count": 107
+    },
+    "payment": {
+      "mobile": {
+        "success": 76,
+        "failed": 5
+      },
+      "desktop": {
+        "success": 2774,
+        "failed": 496
+      }
+    }
+  },
+  {
     "date": "2025-12-07",
     "eapi": {
       "total": 0,
