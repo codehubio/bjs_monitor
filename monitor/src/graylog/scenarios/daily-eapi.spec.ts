@@ -4,8 +4,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
-import { buildDateTimeFolder } from '../../utils/utils';
-import { buildEapiBlock } from '../blocks/eapi-block';
 import { buildOrderBlock } from '../blocks/order-block';
 
 const FOLDER_PREFIX = 'daily-1';

@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
-import { buildDateTimeFolder } from '../../utils/utils';
 import { buildPaymentBlock } from '../blocks/payment.block';
 import { buildPaypalBlock } from '../blocks/paypal-block';
 import { buildOpenCheckBlock } from '../blocks/open-check.block';

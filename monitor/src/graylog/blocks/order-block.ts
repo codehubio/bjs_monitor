@@ -18,28 +18,28 @@ function calculateMinOrderNotification(
   let shouldNotify = false;
 
   // Condition 1: Check if total or success is in top 10% lowest
-  if (orderData.length > 0) {
-    // Get all historical totals and successes
-    const allTotals = orderData.map(item => item.success + item.failed).filter(v => v > 0);
-    const allSuccesses = orderData.map(item => item.success).filter(v => v > 0);
+  // if (orderData.length > 0) {
+  //   // Get all historical totals and successes
+  //   const allTotals = orderData.map(item => item.success + item.failed).filter(v => v > 0);
+  //   const allSuccesses = orderData.map(item => item.success).filter(v => v > 0);
     
-    if (allTotals.length > 0 && allSuccesses.length > 0) {
-      // Sort to find 10th percentile
-      const sortedTotals = [...allTotals].sort((a, b) => a - b);
-      const sortedSuccesses = [...allSuccesses].sort((a, b) => a - b);
+  //   if (allTotals.length > 0 && allSuccesses.length > 0) {
+  //     // Sort to find 10th percentile
+  //     const sortedTotals = [...allTotals].sort((a, b) => a - b);
+  //     const sortedSuccesses = [...allSuccesses].sort((a, b) => a - b);
       
-      // Calculate 10th percentile index (10% of data)
-      const percentile10Index = Math.max(0, Math.floor(sortedTotals.length * 0.1));
-      const percentile10Total = sortedTotals[percentile10Index];
-      const percentile10Success = sortedSuccesses[percentile10Index];
+  //     // Calculate 10th percentile index (10% of data)
+  //     const percentile10Index = Math.max(0, Math.floor(sortedTotals.length * 0.1));
+  //     const percentile10Total = sortedTotals[percentile10Index];
+  //     const percentile10Success = sortedSuccesses[percentile10Index];
       
-      // Check if current values are in top 10% lowest
-      if (successOrders <= percentile10Success) {
-        shouldNotify = true;
-        reasons.push(`Successful orders (${successOrders}) is in top 10% lowest (threshold: ${percentile10Success})`);
-      }
-    }
-  }
+  //     // Check if current values are in top 10% lowest
+  //     if (successOrders <= percentile10Success) {
+  //       shouldNotify = true;
+  //       reasons.push(`Successful orders (${successOrders}) is in top 10% lowest (threshold: ${percentile10Success})`);
+  //     }
+  //   }
+  // }
 
   // Condition 2: Check if total or success is lower than 4 previous 7-day periods by more than 200
   const currentDateObj = new Date(currentDate);
@@ -72,6 +72,7 @@ function calculateMinOrderNotification(
   });
 
   // Build reason string
+  shouldNotify = reasons.length >= 4;
   let reason = '';
   if (shouldNotify) {
     reason = reasons.join('; ');
@@ -92,36 +93,36 @@ function calculateMaxOrderNotification(
   orderData: Array<{ date: string; success: number; failed: number }>
 ): { notify: boolean; reason: string } {
   const reasons: string[] = [];
-  let shouldNotify = false;
+  // let shouldNotify = false;
 
   // Condition 1: Check if total or success is in top 5% highest
-  if (orderData.length > 0) {
-    // Get all historical totals and successes
-    const allTotals = orderData.map(item => item.success + item.failed).filter(v => v > 0);
-    const allSuccesses = orderData.map(item => item.success).filter(v => v > 0);
+  // if (orderData.length > 0) {
+  //   // Get all historical totals and successes
+  //   const allTotals = orderData.map(item => item.success + item.failed).filter(v => v > 0);
+  //   const allSuccesses = orderData.map(item => item.success).filter(v => v > 0);
     
-    if (allTotals.length > 0 && allSuccesses.length > 0) {
-      // Sort to find 95th percentile (top 5%)
-      const sortedTotals = [...allTotals].sort((a, b) => a - b);
-      const sortedSuccesses = [...allSuccesses].sort((a, b) => a - b);
+  //   if (allTotals.length > 0 && allSuccesses.length > 0) {
+  //     // Sort to find 95th percentile (top 5%)
+  //     const sortedTotals = [...allTotals].sort((a, b) => a - b);
+  //     const sortedSuccesses = [...allSuccesses].sort((a, b) => a - b);
       
-      // Calculate 95th percentile index (95% of data, meaning top 5%)
-      const percentile95Index = Math.max(0, Math.floor(sortedTotals.length * 0.95));
-      const percentile95Total = sortedTotals[percentile95Index];
-      const percentile95Success = sortedSuccesses[percentile95Index];
+  //     // Calculate 95th percentile index (95% of data, meaning top 5%)
+  //     const percentile95Index = Math.max(0, Math.floor(sortedTotals.length * 0.95));
+  //     const percentile95Total = sortedTotals[percentile95Index];
+  //     const percentile95Success = sortedSuccesses[percentile95Index];
       
-      // Check if current values are in top 5% highest
-      if (totalOrders >= percentile95Total) {
-        shouldNotify = true;
-        reasons.push(`Total orders (${totalOrders}) is in top 5% highest (threshold: ${percentile95Total})`);
-      }
+  //     // Check if current values are in top 5% highest
+  //     if (totalOrders >= percentile95Total) {
+  //       shouldNotify = true;
+  //       reasons.push(`Total orders (${totalOrders}) is in top 5% highest (threshold: ${percentile95Total})`);
+  //     }
       
-      if (successOrders >= percentile95Success) {
-        shouldNotify = true;
-        reasons.push(`Successful orders (${successOrders}) is in top 5% highest (threshold: ${percentile95Success})`);
-      }
-    }
-  }
+  //     if (successOrders >= percentile95Success) {
+  //       shouldNotify = true;
+  //       reasons.push(`Successful orders (${successOrders}) is in top 5% highest (threshold: ${percentile95Success})`);
+  //     }
+  //   }
+  // }
 
   // Condition 2: Check if total or success is higher than 7 previous 7-day periods by more than 200
   const currentDateObj = new Date(currentDate);
@@ -148,18 +149,19 @@ function calculateMaxOrderNotification(
     const successDiff = successOrders - prevSuccess;
     
     if (totalDiff > 200) {
-      shouldNotify = true;
+      // shouldNotify = true;
       reasons.push(`Total orders (${totalOrders}) is ${totalDiff} higher than ${prev.date} (${prevTotal}), difference > 200`);
     }
     
     if (successDiff > 200) {
-      shouldNotify = true;
+      // shouldNotify = true;
       reasons.push(`Successful orders (${successOrders}) is ${successDiff} higher than ${prev.date} (${prevSuccess}), difference > 200`);
     }
   });
 
   // Build reason string
   let reason = '';
+  const shouldNotify = reasons.length >= 7;
   if (shouldNotify) {
     reason = reasons.join('; ');
   } else {
