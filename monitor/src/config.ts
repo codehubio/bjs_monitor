@@ -31,5 +31,6 @@ export const config = {
   msTeamWebhookUrl: process.env.MS_TEAM_WEBHOOK_URL || '',
   eapiBaseUrl: process.env.EAPI_BASE_URL || '',
   eapiSecurityToken: process.env.EAPI_SECURITY_TOKEN || '',
+  graylogTakingScreenshot: process.env.GRAYLOG_TAKING_SCREENSHOT === undefined ? true : process.env.GRAYLOG_TAKING_SCREENSHOT === 'true',
 };
 

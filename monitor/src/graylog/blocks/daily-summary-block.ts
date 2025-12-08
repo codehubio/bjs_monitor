@@ -18,7 +18,7 @@ import {
   parseUTCTime
 } from '../../utils/utils';
 
-export async function buildSummayBlock(page: Page, fromTime: string, toTime: string, prefix: string) {
+export async function buildSummayBlock(page: Page, fromTime: string, toTime: string, prefix: string, takingScreenshot: boolean = config.graylogTakingScreenshot) {
   const graylogHelper = new GraylogHelper(page);
   const graylogApi = new GraylogApiService();
 
@@ -65,16 +65,18 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
       // Continue with UI-based execution even if API fails
     }
 
-    // Login, visit search view, select time range, enter query, wait, and take screenshot
+    // Login, visit search view, select time range, enter query, wait, and take screenshot (if takingScreenshot is true)
     const screenshotFilename = `query-eapi-${i + 1}-result.png`;
     const screenshotPath = path.join(resultDir, screenshotFilename);
-    await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
-      view,
-      fromTime,
-      toTime,
-      query,
-      screenshotPath
-    );
+    if (takingScreenshot) {
+      await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
+        view,
+        fromTime,
+        toTime,
+        query,
+        screenshotPath
+      );
+    }
 
     // Store result with field types (screenshot will be updated with S3 URL after upload)
     singleQueryResults.push([{
@@ -88,7 +90,7 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
       },
       screenshot: {
         type: 'image',
-        value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename)
+        value: takingScreenshot ? buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) : 'Not Available'
       }
     }]);
   }

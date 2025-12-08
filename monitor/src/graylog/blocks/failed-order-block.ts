@@ -7,7 +7,7 @@ import * as path from 'path';
 import { GraylogApiService } from '../api.service';
 import {  buildS3BaseUrl, parseUTCTime, calculateMinOrderNotification, calculateMaxOrderNotification } from '../../utils/utils';
 
-export async function buildOrderBlock(page: Page, fromTime: string, toTime: string, prefix: string) {
+export async function buildOrderBlock(page: Page, fromTime: string, toTime: string, prefix: string, takingScreenshot: boolean = config.graylogTakingScreenshot) {
   const graylogHelper = new GraylogHelper(page);
   const graylogApi = new GraylogApiService();
 
@@ -66,22 +66,24 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
     console.log(error);
   }
   
-  // Login, visit search view, select time range, enter query, wait, and take screenshot
+  // Login, visit search view, select time range, enter query, wait, and take screenshot (if takingScreenshot is true)
   const screenshotFilenameFailedOrder = `query-order-2-result.png`;
   const screenshotPathFailedOrder = path.join(resultDir, screenshotFilenameFailedOrder);
-  await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
-    failedOrderQuery.view,
-    fromTime,
-    toTime,
-    failedOrderQuery.query,
-    screenshotPathFailedOrder
-  );
+  if (takingScreenshot) {
+    await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
+      failedOrderQuery.view,
+      fromTime,
+      toTime,
+      failedOrderQuery.query,
+      screenshotPathFailedOrder
+    );
+  }
   // Add to arrays for new format
   results.push([{
     name: { type: 'text', value: failedOrderQuery.name },
     total: { type: 'text', value: totalCountFailedOrder }
   }]);
-  results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenameFailedOrder) }}]);
+  results.push([{screenshot: { type: 'image', value: takingScreenshot ? buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilenameFailedOrder) : 'Not Available' }}]);
   results.push(groupedDataFailedOrder);
   return results
 }

@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { GraylogApiService } from '../api.service';
 import { buildS3BaseUrl, parseUTCTime } from '../../utils/utils';
 import { Page } from '@playwright/test';
-export async function buildPaymentBlock(page: Page, fromTime: string, toTime: string, prefix: string) {
+export async function buildPaymentBlock(page: Page, fromTime: string, toTime: string, prefix: string, takingScreenshot: boolean = config.graylogTakingScreenshot) {
   const graylogHelper = new GraylogHelper(page);
   const graylogApi = new GraylogApiService();
 
@@ -26,8 +26,6 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
   const results: any[][] = [];
   let baseCount: number = 0;
   // Track payment counts by type: mobile and desktop
-  let mobileSuccessPayment: number = 0;
-  let desktopSuccessPayment: number = 0;
   let mobileFailedPayment: number = 0;
   let desktopFailedPayment: number = 0;
   
@@ -78,20 +76,22 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
       // Continue with UI-based execution even if API fails
     }
   
-    // Login, visit search view, select time range, enter query, wait, and take screenshot
+    // Login, visit search view, select time range, enter query, wait, and take screenshot (if takingScreenshot is true)
     const screenshotFilename = `query-payment-${++baseCount}-result.png`;
     const screenshotPath = path.join(resultDir, screenshotFilename);
-    await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
-      query.view,
-      fromTime,
-      toTime,
-      query.query,
-      screenshotPath
-    );
+    if (takingScreenshot) {
+      await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
+        query.view,
+        fromTime,
+        toTime,
+        query.query,
+        screenshotPath
+      );
+    }
   
     // Store result with field types (screenshot will be updated with S3 URL after upload)
     // Store groupedData as JSON object (will be properly serialized when writing to JSON file)
-    results.push([{screenshot: { type: 'image', value: buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) }}]);
+    results.push([{screenshot: { type: 'image', value: takingScreenshot ? buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) : 'Not Available' }}]);
     results.push(groupedData);
   }
 
