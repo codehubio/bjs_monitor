@@ -217,3 +217,185 @@ export function mergeToDailyStats(dateEntry: DailyStatsEntry): DailyStatsEntry[]
   
   return dailyStats;
 }
+
+/**
+ * Calculate if minimum order notification should be sent
+ * @param currentDate The current date string (format: 'YYYY-MM-DD')
+ * @param totalOrders Total number of orders
+ * @param successOrders Number of successful orders
+ * @param orderData Array of historical order data
+ * @returns Object with notify flag and reason string
+ */
+export function calculateMinOrderNotification(
+  currentDate: string,
+  totalOrders: number,
+  successOrders: number,
+  orderData: Array<{ date: string; success: number; failed: number }>
+): { notify: boolean; reason: string } {
+  const reasons: string[] = [];
+  let shouldNotify = false;
+
+  // Condition 1: Check if total or success is in top 10% lowest
+  // if (orderData.length > 0) {
+  //   // Get all historical totals and successes
+  //   const allTotals = orderData.map(item => item.success + item.failed).filter(v => v > 0);
+  //   const allSuccesses = orderData.map(item => item.success).filter(v => v > 0);
+    
+  //   if (allTotals.length > 0 && allSuccesses.length > 0) {
+  //     // Sort to find 10th percentile
+  //     const sortedTotals = [...allTotals].sort((a, b) => a - b);
+  //     const sortedSuccesses = [...allSuccesses].sort((a, b) => a - b);
+      
+  //     // Calculate 10th percentile index (10% of data)
+  //     const percentile10Index = Math.max(0, Math.floor(sortedTotals.length * 0.1));
+  //     const percentile10Total = sortedTotals[percentile10Index];
+  //     const percentile10Success = sortedSuccesses[percentile10Index];
+      
+  //     // Check if current values are in top 10% lowest
+  //     if (successOrders <= percentile10Success) {
+  //       shouldNotify = true;
+  //       reasons.push(`Successful orders (${successOrders}) is in top 10% lowest (threshold: ${percentile10Success})`);
+  //     }
+  //   }
+  // }
+
+  // Condition 2: Check if total or success is lower than 4 previous 7-day periods by more than 200
+  const currentDateObj = new Date(currentDate);
+  const previousPeriods: string[] = [];
+  
+  // Calculate dates for 4 previous 7-day periods (7, 14, 21, 28 days ago)
+  for (let daysAgo = 7; daysAgo <= 28; daysAgo += 7) {
+    const previousDate = new Date(currentDateObj);
+    previousDate.setDate(previousDate.getDate() - daysAgo);
+    const previousDateStr = previousDate.toISOString().split('T')[0];
+    previousPeriods.push(previousDateStr);
+  }
+  
+  // Find data for previous periods
+  const previousData = previousPeriods.map(date => {
+    return orderData.find(item => item.date === date);
+  }).filter(item => item !== undefined) as Array<{ date: string; success: number; failed: number }>;
+  
+  // Compare with each previous period
+  previousData.forEach(prev => {
+    const prevTotal = prev.success + prev.failed;
+    const prevSuccess = prev.success;
+    const totalDiff = prevTotal - totalOrders;
+    const successDiff = prevSuccess - successOrders;
+    
+    if (successDiff > 200) {
+      shouldNotify = true;
+      reasons.push(`Successful orders (${successOrders}) is ${successDiff} lower than ${prev.date} (${prevSuccess})`);
+    }
+  });
+
+  // Build reason string
+  shouldNotify = reasons.length >= 4;
+  let reason = '';
+  if (shouldNotify) {
+    reason = reasons.join('; ');
+  } else {
+    reason = 'No conditions met: Total and successful orders are within normal range';
+  }
+
+  return {
+    notify: shouldNotify,
+    reason: reason
+  };
+}
+
+/**
+ * Calculate if maximum order notification should be sent
+ * @param currentDate The current date string (format: 'YYYY-MM-DD')
+ * @param totalOrders Total number of orders
+ * @param successOrders Number of successful orders
+ * @param orderData Array of historical order data
+ * @returns Object with notify flag and reason string
+ */
+export function calculateMaxOrderNotification(
+  currentDate: string,
+  totalOrders: number,
+  successOrders: number,
+  orderData: Array<{ date: string; success: number; failed: number }>
+): { notify: boolean; reason: string } {
+  const reasons: string[] = [];
+  // let shouldNotify = false;
+
+  // Condition 1: Check if total or success is in top 5% highest
+  // if (orderData.length > 0) {
+  //   // Get all historical totals and successes
+  //   const allTotals = orderData.map(item => item.success + item.failed).filter(v => v > 0);
+  //   const allSuccesses = orderData.map(item => item.success).filter(v => v > 0);
+    
+  //   if (allTotals.length > 0 && allSuccesses.length > 0) {
+  //     // Sort to find 95th percentile (top 5%)
+  //     const sortedTotals = [...allTotals].sort((a, b) => a - b);
+  //     const sortedSuccesses = [...allSuccesses].sort((a, b) => a - b);
+      
+  //     // Calculate 95th percentile index (95% of data, meaning top 5%)
+  //     const percentile95Index = Math.max(0, Math.floor(sortedTotals.length * 0.95));
+  //     const percentile95Total = sortedTotals[percentile95Index];
+  //     const percentile95Success = sortedSuccesses[percentile95Index];
+      
+  //     // Check if current values are in top 5% highest
+  //     if (totalOrders >= percentile95Total) {
+  //       shouldNotify = true;
+  //       reasons.push(`Total orders (${totalOrders}) is in top 5% highest (threshold: ${percentile95Total})`);
+  //     }
+      
+  //     if (successOrders >= percentile95Success) {
+  //       shouldNotify = true;
+  //       reasons.push(`Successful orders (${successOrders}) is in top 5% highest (threshold: ${percentile95Success})`);
+  //     }
+  //   }
+  // }
+
+  // Condition 2: Check if total or success is higher than 7 previous 7-day periods by more than 200
+  const currentDateObj = new Date(currentDate);
+  const previousPeriods: string[] = [];
+  
+  // Calculate dates for 7 previous 7-day periods (7, 14, 21, 28, 35, 42, 49 days ago)
+  for (let daysAgo = 7; daysAgo <= 49; daysAgo += 7) {
+    const previousDate = new Date(currentDateObj);
+    previousDate.setDate(previousDate.getDate() - daysAgo);
+    const previousDateStr = previousDate.toISOString().split('T')[0];
+    previousPeriods.push(previousDateStr);
+  }
+  
+  // Find data for previous periods
+  const previousData = previousPeriods.map(date => {
+    return orderData.find(item => item.date === date);
+  }).filter(item => item !== undefined) as Array<{ date: string; success: number; failed: number }>;
+  
+  // Compare with each previous period
+  previousData.forEach(prev => {
+    const prevTotal = prev.success + prev.failed;
+    const prevSuccess = prev.success;
+    const totalDiff = totalOrders - prevTotal;
+    const successDiff = successOrders - prevSuccess;
+    
+    if (totalDiff > 200) {
+      // shouldNotify = true;
+      reasons.push(`Total orders (${totalOrders}) is ${totalDiff} higher than ${prev.date} (${prevTotal}), difference > 200`);
+    }
+    
+    if (successDiff > 200) {
+      // shouldNotify = true;
+      reasons.push(`Successful orders (${successOrders}) is ${successDiff} higher than ${prev.date} (${prevSuccess}), difference > 200`);
+    }
+  });
+
+  // Build reason string
+  let reason = '';
+  const shouldNotify = reasons.length >= 7;
+  if (shouldNotify) {
+    reason = reasons.join('; ');
+  } else {
+    reason = 'No conditions met: Total and successful orders are within normal range';
+  }
+
+  return {
+    notify: shouldNotify,
+    reason: reason
+  };
+}

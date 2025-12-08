@@ -1,11 +1,6 @@
 import { config } from "../../config";
 
 const queries =[{
-  "name": "Total SubmitOrder calls",
-  "query": "eapi_method: SubmitOrder AND (NOT eapi_direction: Started)",
-  "view": config.graylogSubmitOrderSearchView,
-  "groupBy": ["eapi_err_desc"]
-}, {
   "name": "Failed Order",
   "query": "eapi_method:SubmitOrder AND (NOT \"Order is submitted successfully.\") AND (NOT eapi_direction:Started)",
   "view": config.graylogFailedOrderSearchView,

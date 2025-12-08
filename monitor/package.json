@@ -10,8 +10,8 @@
     "test:ui": "playwright test --ui",
     "test:daily": "source ./load-env.sh && playwright test src/graylog/scenarios/*.spec.ts",
     "test:daily-summary": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-summary.spec.ts",
-    "test:daily-order": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-order.spec.ts",
-    "test:daily-rest": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-rest.spec.ts",
+    "test:daily-failed-order": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-failed-order.spec.ts",
+    "test:daily-failed-payment": "source ./load-env.sh && playwright test src/graylog/scenarios/daily-failed-payment.spec.ts",
     "codegen": "playwright codegen",
     "install:browsers": "playwright install chromium",
     "upload:s3": "ts-node src/utils/uploadToS3.ts"

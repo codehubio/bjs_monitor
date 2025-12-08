@@ -4,13 +4,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
-import { buildPaymentBlock } from '../blocks/payment.block';
-import { buildPaypalBlock } from '../blocks/paypal-block';
-import { buildOpenCheckBlock } from '../blocks/open-check.block';
+import { buildPaymentBlock } from '../blocks/failed-payment.block';
 
-const FOLDER_PREFIX = 'daily-2';
+const FOLDER_PREFIX = 'daily-failed-payment';
 
-test.describe('Daily 2 report', () => {
+test.describe('Daily Failed Payments Report', () => {
   test('should login, report daily 2, wait for results', async ({ page }) => {
     // Check if time range is configured
     if (!config.graylogQueryFromTime || !config.graylogQueryToTime) {
@@ -32,14 +30,6 @@ test.describe('Daily 2 report', () => {
     }
     const results: any [][]= [];
 
-    results.push([{'Paypal Report':{ type: 'separator' }}]);  
-    const paypalBlock = await buildPaypalBlock(page, fromTime, toTime, prefix);
-    results.push(...paypalBlock);
-
-    results.push([{'Open Check Report':{ type: 'separator' }}]);  
-    const openCheckBlock = await buildOpenCheckBlock(page, fromTime, toTime, prefix);
-    results.push(...openCheckBlock);
-    
     results.push([{'Payment Report':{ type: 'separator' }}]);  
     const failedPaymentBlock = await buildPaymentBlock(page, fromTime, toTime, prefix);
     results.push(...failedPaymentBlock)
@@ -75,7 +65,7 @@ test.describe('Daily 2 report', () => {
           urls.push(s3Path);
         }
 
-        const title = `Report status - Daily 2 - ${fromTime} to ${toTime}`;
+        const title = `Report status - Daily Failed Payments - ${fromTime} to ${toTime}`;
         
         // Pass results as array of arrays - wrap single array in another array
         // Headers will be automatically extracted from field names

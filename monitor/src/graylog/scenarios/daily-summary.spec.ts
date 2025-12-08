@@ -6,9 +6,9 @@ import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
 import { buildSummayBlock } from '../blocks/daily-summary-block';
 
-const FOLDER_PREFIX = 'daily-1';
+const FOLDER_PREFIX = 'daily-summary';
 
-test.describe('Daily 1 report', () => {
+test.describe('Daily Summary Report', () => {
   test('should login, report daily 1, wait for results', async ({ page }) => {
     // Check if time range is configured
     if (!config.graylogQueryFromTime || !config.graylogQueryToTime) {
@@ -65,7 +65,7 @@ test.describe('Daily 1 report', () => {
           urls.push(s3Path);
         }
 
-        const title = `Report status - Daily 1 - ${fromTime} to ${toTime}`;
+        const title = `Report status - Daily Summary - ${fromTime} to ${toTime}`;
         
         // Pass results as array of arrays - wrap single array in another array
         // Headers will be automatically extracted from field names

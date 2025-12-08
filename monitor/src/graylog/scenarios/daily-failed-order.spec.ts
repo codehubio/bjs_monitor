@@ -4,11 +4,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { uploadFolderToS3 } from '../../utils/uploadToS3';
 import { buildAndSendAdaptiveCard } from '../../utils/sendToMsTeams';
-import { buildOrderBlock } from '../blocks/order-block';
+import { buildOrderBlock } from '../blocks/failed-order-block';
 
-const FOLDER_PREFIX = 'daily-1';
+const FOLDER_PREFIX = 'daily-failed-order';
 
-test.describe('Daily 1 report', () => {
+test.describe('Daily Failed Orders Report', () => {
   test('should login, report daily 1, wait for results', async ({ page }) => {
     // Check if time range is configured
     if (!config.graylogQueryFromTime || !config.graylogQueryToTime) {
@@ -30,9 +30,6 @@ test.describe('Daily 1 report', () => {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
     const results: any [][]= [];
-    // results.push([{'EAPI Report':{ type: 'separator' }}]);  
-    // const eapiBlock = await buildEapiBlock(page, fromTime, toTime, prefix);
-    // results.push(...eapiBlock);
     
     results.push([{'Order Report':{ type: 'separator' }}]);  
     const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
@@ -69,7 +66,7 @@ test.describe('Daily 1 report', () => {
           urls.push(s3Path);
         }
 
-        const title = `Report status - Daily 1 - ${fromTime} to ${toTime}`;
+        const title = `Report status - Daily Failed Orders - ${fromTime} to ${toTime}`;
         
         // Pass results as array of arrays - wrap single array in another array
         // Headers will be automatically extracted from field names
