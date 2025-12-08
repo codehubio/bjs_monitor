@@ -91,6 +91,7 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
   
     // Store result with field types (screenshot will be updated with S3 URL after upload)
     // Store groupedData as JSON object (will be properly serialized when writing to JSON file)
+    results.push([{[`${query.name} - Total Count: ${totalCount}`]: { type: 'separator' }}]);
     results.push([{screenshot: { type: 'image', value: takingScreenshot ? buildS3BaseUrl(config.s3Prefix, prefix, screenshotFilename) : 'Not Available' }}]);
     results.push(groupedData);
   }
