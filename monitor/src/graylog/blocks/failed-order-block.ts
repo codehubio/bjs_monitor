@@ -33,8 +33,6 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
  
   
   const failedOrderQuery = queries[0] as any;
-  await graylogHelper.loginAndVisitSearchView(failedOrderQuery.view);
-  await graylogHelper.selectTimeRange(fromTime, toTime);
   let groupedDataFailedOrder: any[] = [];
   let totalCountFailedOrder: number = 0;
   try {
@@ -67,15 +65,17 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   } catch (error) {
     console.log(error);
   }
-    // Enter the search query and submit
-    // The function will automatically submit (press Enter) and wait for the API response
-  await graylogHelper.enterQueryText(failedOrderQuery.query);
-
-  // Take a screenshot for this query result (one screenshot for all grouped data)
+  
+  // Login, visit search view, select time range, enter query, wait, and take screenshot
   const screenshotFilenameFailedOrder = `query-order-2-result.png`;
   const screenshotPathFailedOrder = path.join(resultDir, screenshotFilenameFailedOrder);
-  await page.screenshot({ path: screenshotPathFailedOrder, fullPage: true });
-  console.log(`Screenshot saved: ${screenshotPathFailedOrder}`);
+  await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
+    failedOrderQuery.view,
+    fromTime,
+    toTime,
+    failedOrderQuery.query,
+    screenshotPathFailedOrder
+  );
   // Add to arrays for new format
   results.push([{
     name: { type: 'text', value: failedOrderQuery.name },

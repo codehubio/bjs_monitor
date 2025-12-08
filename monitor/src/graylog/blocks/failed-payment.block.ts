@@ -36,15 +36,6 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
     const isMobile = query.name.toLowerCase().includes('mobile');
     console.log('Query Name:', query.name);
     console.log('Query:', query.query);
-    await graylogHelper.loginAndVisitSearchView(query.view);
-    // Step 4: Click on the timerange type target div
-    await graylogHelper.selectTimeRange(fromTime, toTime);
-    
-    // Navigate to query-specific view if provided and different from current view
-    console.log(`Navigating to query-specific view: ${query.view}`);
-    await graylogHelper.loginAndVisitSearchView(query.view);
-    await page.waitForLoadState('domcontentloaded');
-    await graylogHelper.selectTimeRange(fromTime, toTime);
   
     // Execute query using Graylog API client and wait for results (grouped by 3 columns)
     let groupedData: any[] = [];
@@ -87,14 +78,16 @@ export async function buildPaymentBlock(page: Page, fromTime: string, toTime: st
       // Continue with UI-based execution even if API fails
     }
   
-    // Enter the search query and submit
-    // The function will automatically submit (press Enter) and wait for the API response
-    await graylogHelper.enterQueryText(query.query);
-  
-    // Take a screenshot for this query result (one screenshot for all grouped data)
+    // Login, visit search view, select time range, enter query, wait, and take screenshot
     const screenshotFilename = `query-payment-${++baseCount}-result.png`;
     const screenshotPath = path.join(resultDir, screenshotFilename);
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
+      query.view,
+      fromTime,
+      toTime,
+      query.query,
+      screenshotPath
+    );
   
     // Store result with field types (screenshot will be updated with S3 URL after upload)
     // Store groupedData as JSON object (will be properly serialized when writing to JSON file)

@@ -49,8 +49,6 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
       name,
       view
     } = queries[i] as any;
-    await graylogHelper.loginAndVisitSearchView(view);
-    await graylogHelper.selectTimeRange(fromTime, toTime);
     console.log(`\n=== Processing Query ${i + 1}/${queries.length} ===`);
     console.log('Query Name:', name);
     console.log('Query:', query);
@@ -67,18 +65,16 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
       // Continue with UI-based execution even if API fails
     }
 
-    // Enter the search query and submit
-    // The function will automatically submit (press Enter) and wait for the API response
-    await graylogHelper.enterQueryText(query);
-
-    // Take a screenshot for this query result
+    // Login, visit search view, select time range, enter query, wait, and take screenshot
     const screenshotFilename = `query-eapi-${i + 1}-result.png`;
     const screenshotPath = path.join(resultDir, screenshotFilename);
-    await page.screenshot({
-      path: screenshotPath,
-      fullPage: true
-    });
-    console.log(`Screenshot saved: ${screenshotPath}`);
+    await graylogHelper.loginVisitSelectTimeEnterQueryWaitAndScreenshot(
+      view,
+      fromTime,
+      toTime,
+      query,
+      screenshotPath
+    );
 
     // Store result with field types (screenshot will be updated with S3 URL after upload)
     singleQueryResults.push([{

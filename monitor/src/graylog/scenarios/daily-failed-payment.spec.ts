@@ -30,7 +30,7 @@ test.describe('Daily Failed Payments Report', () => {
     }
     const results: any [][]= [];
 
-    results.push([{'Payment Report':{ type: 'separator' }}]);  
+    // results.push([{'Payment Report':{ type: 'separator' }}]);  
     const failedPaymentBlock = await buildPaymentBlock(page, fromTime, toTime, prefix);
     results.push(...failedPaymentBlock)
 

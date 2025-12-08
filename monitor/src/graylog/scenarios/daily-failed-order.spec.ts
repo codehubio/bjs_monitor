@@ -31,7 +31,7 @@ test.describe('Daily Failed Orders Report', () => {
     }
     const results: any [][]= [];
     
-    results.push([{'Order Report':{ type: 'separator' }}]);  
+    // results.push([{'Order Report':{ type: 'separator' }}]);  
     const orderBlock = await buildOrderBlock(page, fromTime, toTime, prefix);
     results.push(...orderBlock);
 

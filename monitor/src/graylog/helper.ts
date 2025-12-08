@@ -389,5 +389,47 @@ export class GraylogHelper {
     
     return null;
   }
+
+  /**
+   * Combined function: Login, visit search view, select time range, enter query, wait, and take screenshot
+   * @param searchViewId The search view ID
+   * @param fromTime Start time/date string
+   * @param toTime End time/date string
+   * @param queryText The search query text to enter
+   * @param screenshotPath Optional path to save the screenshot (if not provided, screenshot is not taken)
+   * @param waitTimeMs Optional wait time in milliseconds after entering query (default: 10000)
+   * @param username Optional username (defaults to GRAYLOG_USERNAME from .env)
+   * @param password Optional password (defaults to GRAYLOG_PASSWORD from .env)
+   */
+  async loginVisitSelectTimeEnterQueryWaitAndScreenshot(
+    searchViewId: string,
+    fromTime: string,
+    toTime: string,
+    queryText: string,
+    screenshotPath?: string,
+    waitTimeMs: number = 10000,
+    username?: string,
+    password?: string
+  ): Promise<void> {
+    // Step 1: Login and visit search view
+    await this.loginAndVisitSearchView(searchViewId, username, password);
+    
+    // Step 2: Select time range
+    await this.selectTimeRange(fromTime, toTime);
+    
+    // Step 3: Enter query text (this will automatically press Enter and wait for API response)
+    await this.enterQueryText(queryText, true);
+    
+    // Step 4: Wait additional time if specified
+    if (waitTimeMs > 0) {
+      await this.page.waitForTimeout(waitTimeMs);
+    }
+    
+    // Step 5: Take screenshot if path is provided
+    if (screenshotPath) {
+      await this.page.screenshot({ path: screenshotPath, fullPage: true });
+      console.log(`Screenshot saved: ${screenshotPath}`);
+    }
+  }
 }
 
