@@ -37,29 +37,20 @@ export async function processSubAttributesFile(csvFilePath: string, outputDir?: 
   const result = processSubAttributesFromCSV(csvFilePath);
   console.log(`Total rows found: ${result.rows}\n`);
   
-  // Enrich added and modified sub-attributes with menu item information
-  console.log('Enriching added and modified sub-attributes with menu item details...\n');
-  const itemsToEnrich = [...result.added, ...result.modified];
-  const enrichedItems = await enrichAddedSubAttributesWithMenuItems(itemsToEnrich);
-  
-  // Separate enriched items back into added and modified
-  const enrichedAdded = enrichedItems.filter(item => item.changeType === 'added');
-  const enrichedModified = enrichedItems.filter(item => item.changeType === 'modified');
-  
-  let changes = {
-    added: enrichedAdded,
+  // Check if non-removed items exceed 15, if so randomly sample 15 before enrichment
+  const nonRemovedCount = result.added.length + result.modified.length + result.moved.length;
+  let itemsToProcess = {
+    added: result.added,
     removed: result.removed,
-    modified: enrichedModified,
+    modified: result.modified,
     moved: result.moved
   };
   
-  // Check if non-removed items exceed 15, if so randomly sample 15
-  const nonRemovedCount = changes.added.length + changes.modified.length + changes.moved.length;
   if (nonRemovedCount > 15) {
-    console.log(`Found ${nonRemovedCount} non-removed items. Randomly sampling 15 items (excluding ${changes.removed.length} removed items).\n`);
+    console.log(`Found ${nonRemovedCount} non-removed items. Randomly sampling 15 items (excluding ${result.removed.length} removed items) before enrichment.\n`);
     
     // Combine all non-removed items
-    const allNonRemoved = [...changes.added, ...changes.modified, ...changes.moved];
+    const allNonRemoved = [...result.added, ...result.modified, ...result.moved];
     const sampled = randomSample(allNonRemoved, 15);
     
     // Separate sampled items back into their categories
@@ -77,13 +68,29 @@ export async function processSubAttributesFile(csvFilePath: string, outputDir?: 
       }
     });
     
-    changes = {
+    itemsToProcess = {
       added: sampledAdded,
-      removed: changes.removed, // Keep all removed items
+      removed: result.removed, // Keep all removed items
       modified: sampledModified,
       moved: sampledMoved
     };
   }
+  
+  // Enrich added and modified sub-attributes with menu item information (only the sampled items if sampling occurred)
+  console.log('Enriching added and modified sub-attributes with menu item details...\n');
+  const itemsToEnrich = [...itemsToProcess.added, ...itemsToProcess.modified];
+  const enrichedItems = await enrichAddedSubAttributesWithMenuItems(itemsToEnrich);
+  
+  // Separate enriched items back into added and modified
+  const enrichedAdded = enrichedItems.filter(item => item.changeType === 'added');
+  const enrichedModified = enrichedItems.filter(item => item.changeType === 'modified');
+  
+  const changes = {
+    added: enrichedAdded,
+    removed: itemsToProcess.removed,
+    modified: enrichedModified,
+    moved: itemsToProcess.moved
+  };
   
   const total = changes.added.length + changes.removed.length + changes.modified.length + changes.moved.length;
   
