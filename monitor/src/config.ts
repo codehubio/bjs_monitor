@@ -17,6 +17,7 @@ export const config = {
   graylogFailedOrderSearchView: process.env.GRAYLOG_FAILED_ORDER_SEARCH_VIEW || '',
   graylogEAPINumberView: process.env.GRAYLOG_NUMBER_VIEW_EAPI || '',
   graylogUserFlowNumberView: process.env.GRAYLOG_NUMBER_VIEW_USERFLOW || '',
+  graylogDefaultNumberView: process.env.GRAYLOG_NUMBER_VIEW_DEFAULT || '',
   graylogQueryFromTime: process.env.GRAYLOG_QUERY_FROM_TIME || '',
   graylogQueryToTime: process.env.GRAYLOG_QUERY_TO_TIME || '',
   awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID || '',

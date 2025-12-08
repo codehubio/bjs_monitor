@@ -6,6 +6,20 @@ const queries =[{
   "view": config.graylogEAPINumberView,
   "stream": config.graylogEapiStream
 }, {
+  "name": "Total HTTP-error non 5xx EAPIs",
+  "query": "NOT eapi_direction:Started AND ((eapi_http_status:>=400 AND eapi_http_status:<500) OR eapi_http_status:<200)",
+  "view": config.graylogEAPINumberView,
+  "stream": config.graylogEapiStream
+}, {
+  "name": "Total HTTP-error 5xx EAPIs",
+  "query": "eapi_http_status:>=500",
+  "view": config.graylogEAPINumberView,
+  "stream": config.graylogEapiStream
+}, {
+  "name": "Total socket hang up errors",
+  "query": "\"socket hang up\" OR \"TLSSocket.socketOnEnd\"",
+  "view": config.graylogDefaultNumberView,
+}, {
   "name": "Total Cronjob EAPIs", 
   "query":"eapi_ip:undefined AND NOT eapi_direction:Started",
   "view": config.graylogEAPINumberView,
@@ -65,6 +79,11 @@ const queries =[{
   "query": "userflow_action:(ERR_PAYPAL_PAYMENT_PAGE_LOAD OR ERR_PAYPAL_PAYMENT_VALIDATION OR ERR_PAYPAL_PAYMENT_VALIDATION OR ERR_PAYPAL_PAYMENT_EAPI)",
   "view": config.graylogUserFlowNumberView,
   "stream": config.graylogUserFlowStream
+}, {
+    "name": `Total open check`,
+    "query": "userflow_action:ON_LOAD_OPEN_CHECK_MP",
+    "view": config.graylogUserFlowNumberView,
+    "stream": config.graylogUserFlowStream
 }]
 
 export default queries;

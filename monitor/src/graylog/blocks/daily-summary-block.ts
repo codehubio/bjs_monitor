@@ -58,7 +58,7 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
     let apiCount: number | null = null;
     try {
       console.log(`\nExecuting query via API...`);
-      const apiResult = await graylogApi.executeCountQueryByStreamIdsAndWait(query, fromTimeISO, toTimeISO, [stream]);
+      const apiResult = await graylogApi.executeCountQueryByStreamIdsAndWait(query, fromTimeISO, toTimeISO, stream ? [stream] : []);
       apiCount = apiResult.count;
       console.log(`API Query Count: ${apiCount ?? 'N/A'}`);
     } catch (error) {
