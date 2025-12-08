@@ -219,6 +219,59 @@ export function mergeToDailyStats(dateEntry: DailyStatsEntry): DailyStatsEntry[]
 }
 
 /**
+ * Merge data entry to daily-summary.json
+ * Reads existing daily-summary.json, merges the dateEntry, and writes back to file
+ * @param dateEntry The entry to merge (must have a 'date' field)
+ * @returns The updated daily summary array
+ */
+export function mergeToDailySummary(dateEntry: any): any[] {
+  const dailySummaryPath = path.resolve(process.cwd(), 'src', 'data', 'daily-summary.json');
+  
+  if (!dateEntry.date) {
+    throw new Error('dateEntry must have a "date" field');
+  }
+  
+  let dailySummary: any[] = [];
+  
+  // Read existing daily-summary.json
+  if (fs.existsSync(dailySummaryPath)) {
+    const existingData = fs.readFileSync(dailySummaryPath, 'utf-8');
+    try {
+      const parsed = JSON.parse(existingData);
+      if (Array.isArray(parsed)) {
+        dailySummary = parsed;
+      } else {
+        dailySummary = [];
+      }
+    } catch (error) {
+      console.warn('Failed to parse existing daily-summary.json, starting fresh');
+      dailySummary = [];
+    }
+  }
+  
+  // Find or create entry for this date
+  const existingIndex = dailySummary.findIndex(item => item.date === dateEntry.date);
+  
+  if (existingIndex >= 0) {
+    // Update existing entry with deep merge
+    dailySummary[existingIndex] = deepMerge(dailySummary[existingIndex], dateEntry);
+    console.log(`\nUpdated daily-summary.json for date ${dateEntry.date}`);
+  } else {
+    // Add new entry (keep sorted by date)
+    dailySummary.push(dateEntry);
+    // Sort by date
+    dailySummary.sort((a, b) => a.date.localeCompare(b.date));
+    console.log(`\nAdded new entry to daily-summary.json for date ${dateEntry.date}`);
+  }
+  
+  // Write updated data back to file
+  fs.writeFileSync(dailySummaryPath, JSON.stringify(dailySummary, null, 2));
+  console.log(`Stats written to: ${dailySummaryPath}`);
+  
+  return dailySummary;
+}
+
+/**
  * Calculate if minimum order notification should be sent
  * @param currentDate The current date string (format: 'YYYY-MM-DD')
  * @param totalOrders Total number of orders
