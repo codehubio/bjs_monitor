@@ -100,3 +100,43 @@ export interface SubAttributesRow {
   afterSubAttributes: string;
 }
 
+/**
+ * Attributes entry for a specific time period (before or after)
+ */
+export interface AttributesEntry {
+  location: string;
+  category: string;
+  product: string;
+  attributes: string;
+  // Parsed fields
+  locationParsed?: ParsedField;
+  categoryParsed?: ParsedField;
+  productParsed?: ParsedField;
+  attributesParsed?: ParsedField;
+}
+
+/**
+ * Attributes change record comparing before and after states
+ */
+export interface AttributesChange {
+  before: AttributesEntry;
+  after: AttributesEntry;
+  changeType: 'added' | 'removed' | 'modified' | 'moved';
+  menuItemInfo?: MenuItemInfo; // Menu item details for added attributes
+}
+
+/**
+ * Parsed CSV row data for attributes
+ * Left columns (0-3) are "before", right columns (4-7) are "after"
+ */
+export interface AttributesRow {
+  beforeLocation: string;
+  beforeCategory: string;
+  beforeProduct: string;
+  beforeAttributes: string;
+  afterLocation: string;
+  afterCategory: string;
+  afterProduct: string;
+  afterAttributes: string;
+}
+

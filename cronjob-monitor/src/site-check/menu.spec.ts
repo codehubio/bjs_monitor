@@ -268,7 +268,7 @@ test.describe('BJs Menu Page', () => {
           screenshotPath = path.join(screenshotDir, screenshotFilename);
           
           console.log(`Screenshot filename: ${screenshotFilename}`);
-          await page.screenshot({ path: screenshotPath, fullPage: true });
+          await page.screenshot({ path: screenshotPath, fullPage: false });
           console.log(`Screenshot saved: ${screenshotPath}`);
         } else {
           console.log('Skipping screenshot since product link was not found');

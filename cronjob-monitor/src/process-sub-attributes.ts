@@ -2,6 +2,31 @@ import * as path from 'path';
 import { processSubAttributesFromCSV } from './sub-attributes/sub-attributes-service';
 import { formatSubAttributesChange, saveChangesToJSON } from './sub-attributes/output-service';
 import { enrichAddedSubAttributesWithMenuItems } from './sub-attributes/menu-item-enricher';
+import { SubAttributesChange } from './types';
+
+/**
+ * Randomly sample items from an array using Fisher-Yates shuffle
+ * @param array The array to sample from
+ * @param count The number of items to sample
+ * @returns Sampled array
+ */
+function randomSample<T>(array: T[], count: number): T[] {
+  if (array.length <= count) {
+    return array;
+  }
+  
+  // Create a copy of the array
+  const shuffled = [...array];
+  
+  // Fisher-Yates shuffle algorithm
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  // Return first count items
+  return shuffled.slice(0, count);
+}
 
 /**
  * Main processing function
@@ -21,12 +46,44 @@ export async function processSubAttributesFile(csvFilePath: string, outputDir?: 
   const enrichedAdded = enrichedItems.filter(item => item.changeType === 'added');
   const enrichedModified = enrichedItems.filter(item => item.changeType === 'modified');
   
-  const changes = {
+  let changes = {
     added: enrichedAdded,
     removed: result.removed,
     modified: enrichedModified,
     moved: result.moved
   };
+  
+  // Check if non-removed items exceed 15, if so randomly sample 15
+  const nonRemovedCount = changes.added.length + changes.modified.length + changes.moved.length;
+  if (nonRemovedCount > 15) {
+    console.log(`Found ${nonRemovedCount} non-removed items. Randomly sampling 15 items (excluding ${changes.removed.length} removed items).\n`);
+    
+    // Combine all non-removed items
+    const allNonRemoved = [...changes.added, ...changes.modified, ...changes.moved];
+    const sampled = randomSample(allNonRemoved, 15);
+    
+    // Separate sampled items back into their categories
+    const sampledAdded: SubAttributesChange[] = [];
+    const sampledModified: SubAttributesChange[] = [];
+    const sampledMoved: SubAttributesChange[] = [];
+    
+    sampled.forEach(item => {
+      if (item.changeType === 'added') {
+        sampledAdded.push(item);
+      } else if (item.changeType === 'modified') {
+        sampledModified.push(item);
+      } else if (item.changeType === 'moved') {
+        sampledMoved.push(item);
+      }
+    });
+    
+    changes = {
+      added: sampledAdded,
+      removed: changes.removed, // Keep all removed items
+      modified: sampledModified,
+      moved: sampledMoved
+    };
+  }
   
   const total = changes.added.length + changes.removed.length + changes.modified.length + changes.moved.length;
   

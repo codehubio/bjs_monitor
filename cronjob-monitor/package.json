@@ -8,6 +8,7 @@
     "start": "ts-node src/index.ts",
     "process:products": "source ./load-env.sh && ts-node src/process-products.ts",
     "process:sub-attributes": "source ./load-env.sh && ts-node src/process-sub-attributes.ts",
+    "process:attributes": "source ./load-env.sh && ts-node src/process-attributes.ts",
     "test:products": "source ./load-env.sh && playwright test src/site-check/menu.spec.ts --config=src/site-check/playwright.config.ts",
     "test:sub-attributes": "source ./load-env.sh && playwright test src/site-check/sub-attribute.spec.ts --config=src/site-check/playwright.config.ts",
     "install:browsers": "playwright install chromium"
