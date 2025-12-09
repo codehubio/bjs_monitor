@@ -17,7 +17,8 @@ import {
   buildS3BaseUrl,
   parseUTCTime,
   mergeToDailySummary,
-  calculateMaxOrderNotification
+  calculateMaxOrderNotification,
+  calculateMinOrderNotification
 } from '../../utils/utils';
 
 export async function buildSummayBlock(page: Page, fromTime: string, toTime: string, prefix: string, takingScreenshot: boolean = config.graylogTakingScreenshot) {
@@ -226,23 +227,36 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
         
         const totalOrders = numericSuccessfulOrders + numericFailedOrders;
         
-        // Calculate notification
-        const notification = calculateMaxOrderNotification(
+        // Calculate both min and max notifications
+        const maxNotification = calculateMaxOrderNotification(
+          dateFromTime,
+          totalOrders,
+          numericSuccessfulOrders
+        );
+        const minNotification = calculateMinOrderNotification(
           dateFromTime,
           totalOrders,
           numericSuccessfulOrders
         );
         
         // Update the label to show notification result
+        // Priority: min notification (low orders) takes precedence over max notification
         const currentName = successfulOrdersResult.name.value;
-        if (notification.notify) {
-          successfulOrdersResult.name.value = `${currentName} - ⚠️ ${notification.reason}`;
-          console.log(`\n⚠️ Notification calculated for Total successful orders: ${notification.reason}`);
+        let updatedName = currentName;
+        
+        if (minNotification.notify) {
+          updatedName = `${currentName} - ⚠️ MIN ALERT: ${minNotification.reason}`;
+          console.log(`\n⚠️ MIN Notification triggered for Total successful orders: ${minNotification.reason}`);
+        } else if (maxNotification.notify) {
+          updatedName = `${currentName} - ⚠️ MAX ALERT: ${maxNotification.reason}`;
+          console.log(`\n⚠️ MAX Notification triggered for Total successful orders: ${maxNotification.reason}`);
         } else {
-          // Still show the reason even if notify is false, but without warning emoji
-          successfulOrdersResult.name.value = `${currentName} - ${notification.reason}`;
-          console.log(`\nNotification calculated for Total successful orders: ${notification.reason}`);
+          // Show both reasons even if neither triggers, but without warning emoji
+          updatedName = `${currentName} - MIN: ${minNotification.reason}; MAX: ${maxNotification.reason}`;
+          console.log(`\nNotification calculated for Total successful orders - MIN: ${minNotification.reason}; MAX: ${maxNotification.reason}`);
         }
+        
+        successfulOrdersResult.name.value = updatedName;
       }
     }
   } catch (error) {

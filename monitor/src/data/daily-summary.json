@@ -718,5 +718,25 @@
     "failedMobilePaypal": 0,
     "failedBjsOnlinePaypal": 13,
     "openCheck": 111
+  },
+  {
+    "date": "2025-12-09",
+    "totalEapis": 0,
+    "httpErrorNon5xx": 0,
+    "httpError5xx": 0,
+    "socketHangUpErrors": 0,
+    "cronjobEapis": 0,
+    "eapiDurationOver10Seconds": 0,
+    "successfulOrders": 0,
+    "failedOrders": 0,
+    "successfulMobilePayments": 0,
+    "failedMobilePayments": 0,
+    "successfulBjsOnlinePayments": 0,
+    "failedBjsOnlinePayments": 0,
+    "successfulPaypalButFailedSubmitOrder": 0,
+    "successfulPaypal": 0,
+    "failedMobilePaypal": 0,
+    "failedBjsOnlinePaypal": 0,
+    "openCheck": 0
   }
 ]
