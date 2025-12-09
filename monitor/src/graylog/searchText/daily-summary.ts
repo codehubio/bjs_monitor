@@ -31,7 +31,7 @@ const queries =[{
   "stream": config.graylogEapiStream
 }, {
   "name": "Total successful orders",
-  "query": "eapi_method: SubmitOrder AND (NOT eapi_direction: Started)",
+  "query": "eapi_method:SubmitOrder AND \"Order is submitted successfully.\"",
   "view": config.graylogEAPINumberView,
   "stream": config.graylogEapiStream,
 }, {

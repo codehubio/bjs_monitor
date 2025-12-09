@@ -707,7 +707,7 @@
     "socketHangUpErrors": 1358,
     "cronjobEapis": 46196,
     "eapiDurationOver10Seconds": 281,
-    "successfulOrders": 2596,
+    "successfulOrders": 2588,
     "failedOrders": 8,
     "successfulMobilePayments": 66,
     "failedMobilePayments": 5,
