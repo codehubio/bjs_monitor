@@ -16,7 +16,8 @@ import {
 import {
   buildS3BaseUrl,
   parseUTCTime,
-  mergeToDailySummary
+  mergeToDailySummary,
+  calculateMaxOrderNotification
 } from '../../utils/utils';
 
 export async function buildSummayBlock(page: Page, fromTime: string, toTime: string, prefix: string, takingScreenshot: boolean = config.graylogTakingScreenshot) {
@@ -187,6 +188,66 @@ export async function buildSummayBlock(page: Page, fromTime: string, toTime: str
   } catch (error) {
     console.error('Failed to write daily-summary.json:', error);
     // Don't fail the test if daily-summary.json write fails
+  }
+
+  // Calculate notification for "Total successful orders" and update the label
+  try {
+    const dateFromTime = fromTime.split(' ')[0];
+    const successfulOrdersIndex = queries.findIndex((q: any) => q.name === "Total successful orders");
+    
+    if (successfulOrdersIndex >= 0) {
+      const successfulOrdersResult = singleQueryResults[successfulOrdersIndex]?.[0];
+      const successfulOrdersCount = successfulOrdersResult?.total?.value;
+      
+      if (successfulOrdersCount !== null && successfulOrdersCount !== undefined) {
+        // Convert to number
+        let numericSuccessfulOrders: number;
+        if (typeof successfulOrdersCount === 'number') {
+          numericSuccessfulOrders = successfulOrdersCount;
+        } else {
+          const parsed = parseInt(String(successfulOrdersCount), 10);
+          numericSuccessfulOrders = isNaN(parsed) ? 0 : parsed;
+        }
+        
+        // Get failed orders count for total calculation
+        const failedOrdersIndex = queries.findIndex((q: any) => q.name === "Total failed orders");
+        const failedOrdersResult = failedOrdersIndex >= 0 ? singleQueryResults[failedOrdersIndex]?.[0] : null;
+        const failedOrdersCount = failedOrdersResult?.total?.value;
+        
+        let numericFailedOrders: number = 0;
+        if (failedOrdersCount !== null && failedOrdersCount !== undefined) {
+          if (typeof failedOrdersCount === 'number') {
+            numericFailedOrders = failedOrdersCount;
+          } else {
+            const parsed = parseInt(String(failedOrdersCount), 10);
+            numericFailedOrders = isNaN(parsed) ? 0 : parsed;
+          }
+        }
+        
+        const totalOrders = numericSuccessfulOrders + numericFailedOrders;
+        
+        // Calculate notification
+        const notification = calculateMaxOrderNotification(
+          dateFromTime,
+          totalOrders,
+          numericSuccessfulOrders
+        );
+        
+        // Update the label to show notification result
+        const currentName = successfulOrdersResult.name.value;
+        if (notification.notify) {
+          successfulOrdersResult.name.value = `${currentName} - ⚠️ ${notification.reason}`;
+          console.log(`\n⚠️ Notification calculated for Total successful orders: ${notification.reason}`);
+        } else {
+          // Still show the reason even if notify is false, but without warning emoji
+          successfulOrdersResult.name.value = `${currentName} - ${notification.reason}`;
+          console.log(`\nNotification calculated for Total successful orders: ${notification.reason}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to calculate order notification:', error);
+    // Don't fail if notification calculation fails
   }
 
   return singleQueryResults

@@ -65,7 +65,7 @@ export async function buildOrderBlock(page: Page, fromTime: string, toTime: stri
   } catch (error) {
     console.log(error);
   }
-  
+
   // Login, visit search view, select time range, enter query, wait, and take screenshot (if takingScreenshot is true)
   const screenshotFilenameFailedOrder = `query-order-2-result.png`;
   const screenshotPathFailedOrder = path.join(resultDir, screenshotFilenameFailedOrder);

@@ -273,20 +273,44 @@ export function mergeToDailySummary(dateEntry: any): any[] {
 
 /**
  * Calculate if minimum order notification should be sent
+ * Reads order data from daily-summary.json
  * @param currentDate The current date string (format: 'YYYY-MM-DD')
  * @param totalOrders Total number of orders
  * @param successOrders Number of successful orders
- * @param orderData Array of historical order data
  * @returns Object with notify flag and reason string
  */
 export function calculateMinOrderNotification(
   currentDate: string,
   totalOrders: number,
-  successOrders: number,
-  orderData: Array<{ date: string; success: number; failed: number }>
+  successOrders: number
 ): { notify: boolean; reason: string } {
   const reasons: string[] = [];
   let shouldNotify = false;
+
+  // Read order data from daily-summary.json
+  // Note: daily-summary.json uses 'successfulOrders' for successful orders and 'failedOrders' for failed orders
+  const dailySummaryPath = path.resolve(process.cwd(), 'src', 'data', 'daily-summary.json');
+  let orderData: Array<{ date: string; success: number; failed: number }> = [];
+  
+  if (fs.existsSync(dailySummaryPath)) {
+    try {
+      const existingData = fs.readFileSync(dailySummaryPath, 'utf-8');
+      const parsed = JSON.parse(existingData);
+      if (Array.isArray(parsed)) {
+        // Extract order data from daily-summary.json
+        // Map successfulOrders -> success, failedOrders -> failed for internal use
+        orderData = parsed
+          .filter((item: any) => item.successfulOrders !== undefined && item.failedOrders !== undefined)
+          .map((item: any) => ({
+            date: item.date,
+            success: item.successfulOrders || 0,  // successfulOrders from daily-summary.json
+            failed: item.failedOrders || 0         // failedOrders from daily-summary.json
+          }));
+      }
+    } catch (error) {
+      console.warn('Failed to read daily-summary.json for order notification calculation:', error);
+    }
+  }
 
   // Condition 1: Check if total or success is in top 10% lowest
   // if (orderData.length > 0) {
@@ -317,7 +341,7 @@ export function calculateMinOrderNotification(
   const previousPeriods: string[] = [];
   
   // Calculate dates for 4 previous 7-day periods (7, 14, 21, 28 days ago)
-  for (let daysAgo = 7; daysAgo <= 28; daysAgo += 7) {
+  for (let daysAgo = 7; daysAgo <=7*4; daysAgo += 7) {
     const previousDate = new Date(currentDateObj);
     previousDate.setDate(previousDate.getDate() - daysAgo);
     const previousDateStr = previousDate.toISOString().split('T')[0];
@@ -331,14 +355,11 @@ export function calculateMinOrderNotification(
   
   // Compare with each previous period
   previousData.forEach(prev => {
-    const prevTotal = prev.success + prev.failed;
     const prevSuccess = prev.success;
-    const totalDiff = prevTotal - totalOrders;
     const successDiff = prevSuccess - successOrders;
     
     if (successDiff > 200) {
-      shouldNotify = true;
-      reasons.push(`Successful orders (${successOrders}) is ${successDiff} lower than ${prev.date} (${prevSuccess})`);
+      reasons.push(`less-than-200 higher than ${prev.date} (${prevSuccess})`);
     }
   });
 
@@ -350,7 +371,7 @@ export function calculateMinOrderNotification(
   } else {
     reason = 'No conditions met: Total and successful orders are within normal range';
   }
-
+  console.log(reasons);
   return {
     notify: shouldNotify,
     reason: reason
@@ -359,20 +380,44 @@ export function calculateMinOrderNotification(
 
 /**
  * Calculate if maximum order notification should be sent
+ * Reads order data from daily-summary.json
  * @param currentDate The current date string (format: 'YYYY-MM-DD')
  * @param totalOrders Total number of orders
  * @param successOrders Number of successful orders
- * @param orderData Array of historical order data
  * @returns Object with notify flag and reason string
  */
 export function calculateMaxOrderNotification(
   currentDate: string,
   totalOrders: number,
-  successOrders: number,
-  orderData: Array<{ date: string; success: number; failed: number }>
+  successOrders: number
 ): { notify: boolean; reason: string } {
   const reasons: string[] = [];
   // let shouldNotify = false;
+
+  // Read order data from daily-summary.json
+  // Note: daily-summary.json uses 'successfulOrders' for successful orders and 'failedOrders' for failed orders
+  const dailySummaryPath = path.resolve(process.cwd(), 'src', 'data', 'daily-summary.json');
+  let orderData: Array<{ date: string; success: number; failed: number }> = [];
+  
+  if (fs.existsSync(dailySummaryPath)) {
+    try {
+      const existingData = fs.readFileSync(dailySummaryPath, 'utf-8');
+      const parsed = JSON.parse(existingData);
+      if (Array.isArray(parsed)) {
+        // Extract order data from daily-summary.json
+        // Map successfulOrders -> success, failedOrders -> failed for internal use
+        orderData = parsed
+          .filter((item: any) => item.successfulOrders !== undefined && item.failedOrders !== undefined)
+          .map((item: any) => ({
+            date: item.date,
+            success: item.successfulOrders || 0,  // successfulOrders from daily-summary.json
+            failed: item.failedOrders || 0         // failedOrders from daily-summary.json
+          }));
+      }
+    } catch (error) {
+      console.warn('Failed to read daily-summary.json for order notification calculation:', error);
+    }
+  }
 
   // Condition 1: Check if total or success is in top 5% highest
   // if (orderData.length > 0) {
@@ -408,7 +453,7 @@ export function calculateMaxOrderNotification(
   const previousPeriods: string[] = [];
   
   // Calculate dates for 7 previous 7-day periods (7, 14, 21, 28, 35, 42, 49 days ago)
-  for (let daysAgo = 7; daysAgo <= 49; daysAgo += 7) {
+  for (let daysAgo = 7; daysAgo <= 7*30; daysAgo += 7) {
     const previousDate = new Date(currentDateObj);
     previousDate.setDate(previousDate.getDate() - daysAgo);
     const previousDateStr = previousDate.toISOString().split('T')[0];
@@ -422,19 +467,12 @@ export function calculateMaxOrderNotification(
   
   // Compare with each previous period
   previousData.forEach(prev => {
-    const prevTotal = prev.success + prev.failed;
     const prevSuccess = prev.success;
-    const totalDiff = totalOrders - prevTotal;
     const successDiff = successOrders - prevSuccess;
-    
-    if (totalDiff > 200) {
-      // shouldNotify = true;
-      reasons.push(`Total orders (${totalOrders}) is ${totalDiff} higher than ${prev.date} (${prevTotal}), difference > 200`);
-    }
     
     if (successDiff > 200) {
       // shouldNotify = true;
-      reasons.push(`Successful orders (${successOrders}) is ${successDiff} higher than ${prev.date} (${prevSuccess}), difference > 200`);
+      reasons.push(`more-than-200 higher than ${prev.date} (${prevSuccess})`);
     }
   });
 
